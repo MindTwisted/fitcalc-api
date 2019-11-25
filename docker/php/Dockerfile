@@ -20,4 +20,5 @@ RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN ln -s /app/public/index.php /var/www/html/index.php
+RUN a2enmod rewrite
+RUN rm -rf /var/www/html && ln -s /app/public /var/www/html
