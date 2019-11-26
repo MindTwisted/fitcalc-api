@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -24,11 +25,16 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @Assert\NotBlank()
      */
-    private $name;
+    private $fullname;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     *
+     * @Assert\NotBlank()
+     * @Assert\Length(min="8")
      */
     private $username;
 
@@ -39,7 +45,15 @@ class User implements UserInterface
 
     /**
      * @var string The hashed password
+     *
      * @ORM\Column(type="string")
+     *
+     * @Assert\NotBlank()
+     * @Assert\Length(min="8")
+     * @Assert\Regex(
+     *     pattern="/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/",
+     *     message="Password should contains minimum eight characters, at least one letter, one number and one special character."
+     * )
      */
     private $password;
 
@@ -50,6 +64,9 @@ class User implements UserInterface
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Email", mappedBy="user", orphanRemoval=true)
+     *
+     * @Assert\Valid()
+     * @Assert\Count(min="1")
      */
     private $emails;
 
@@ -70,14 +87,14 @@ class User implements UserInterface
         return $this->id;
     }
 
-    public function getName(): string
+    public function getFullname(): string
     {
-        return (string) $this->name;
+        return (string) $this->fullname;
     }
 
-    public function setName(string $name): self
+    public function setFullname(string $fullname): self
     {
-        $this->name = $name;
+        $this->fullname = $fullname;
 
         return $this;
     }
