@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Email;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method Email|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,6 +18,23 @@ class EmailRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Email::class);
+    }
+
+    /**
+     * @param string $value
+     *
+     * @return Email|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findNotVerifiedOneByHash(string $value): ?Email
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.hash = :val')
+            ->andWhere('e.verified = 0')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     // /**

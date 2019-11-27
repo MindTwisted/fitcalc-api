@@ -12,6 +12,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
  * @ORM\Entity(repositoryClass="App\Repository\EmailRepository")
  * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("email")
+ * @UniqueEntity("hash")
  */
 class Email
 {
@@ -40,7 +41,7 @@ class Email
     private $email;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $hash;
 

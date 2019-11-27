@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Email;
 use App\Entity\User;
+use App\Repository\EmailRepository;
 use App\Serializer\Normalizer\ConstraintViolationListNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,12 +21,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @package App\Controller
  *
- * @Route("/api")
+ * @Route("/api/auth")
  */
 class AuthController extends AbstractController
 {
     /**
-     * @Route("/auth", name="auth", methods={"GET"})
+     * @Route("/", name="auth", methods={"GET"})
      */
     public function index()
     {
@@ -73,9 +75,52 @@ class AuthController extends AbstractController
         $entityManager->persist($user);
         $entityManager->flush();
 
+        /**
+         * TODO: Sendmail with email verification link
+         */
+
         return $this->json([
             'status' => 'success',
             'message' => sprintf('User %s has been registered.', $user->getFullname())
+        ]);
+    }
+
+    /**
+     * @Route("/register_email_confirmation/{hash}", name="registerEmailConfirmation", methods={"GET"})
+     *
+     * @param string $hash
+     * @param Request $request
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     */
+    public function registerEmailConfirmation(string $hash, Request $request): JsonResponse
+    {
+        /** @var EmailRepository $emailRepository */
+        $emailRepository = $this->getDoctrine()->getRepository(Email::class);
+        $email = $emailRepository->findNotVerifiedOneByHash($hash);
+
+        if (!$email) {
+            return $this->json(
+                [
+                    'status' => 'failed',
+                    'message' => 'Forbidden.'
+                ],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
+
+        $email->setVerified(true);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($email);
+        $entityManager->flush();
+
+        return $this->json([
+            'status' => 'success',
+            'message' => sprintf('Email %s has been confirmed.', $email->getEmail())
         ]);
     }
 }
