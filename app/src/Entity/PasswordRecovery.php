@@ -7,10 +7,12 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PasswordRecoveryRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class PasswordRecovery
 {
     use TimestampableEntity;
+    use UpdateTimestampsTrait;
 
     /**
      * @ORM\Id()

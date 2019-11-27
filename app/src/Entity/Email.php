@@ -3,15 +3,20 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\EmailRepository")
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("email")
  */
 class Email
 {
     use TimestampableEntity;
+    use UpdateTimestampsTrait;
 
     /**
      * @ORM\Id()
@@ -43,6 +48,22 @@ class Email
      * @ORM\Column(type="boolean")
      */
     private $verified;
+
+    /**
+     * @ORM\PrePersist()
+     *
+     * @throws Exception
+     */
+    public function setPrePersistDefaults()
+    {
+        if ($this->verified === null) {
+            $this->verified = false;
+        }
+
+        if ($this->hash === null) {
+            $this->hash = md5(random_bytes(10));
+        }
+    }
 
     public function getId(): ?int
     {

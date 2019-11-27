@@ -7,10 +7,12 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RefreshTokenRepository")
+ * @ORM\HasLifecycleCallbacks()
  */
 class RefreshToken
 {
     use TimestampableEntity;
+    use UpdateTimestampsTrait;
 
     /**
      * @ORM\Id()

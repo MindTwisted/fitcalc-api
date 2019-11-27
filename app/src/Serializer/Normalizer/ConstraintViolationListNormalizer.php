@@ -11,12 +11,14 @@ class ConstraintViolationListNormalizer implements NormalizerInterface, Cacheabl
 {
     public function normalize($object, $format = null, array $context = []): array
     {
-        [$messages, $violations] = $this->getMessagesAndViolations($object);
+        $violations = $this->getViolations($object);
 
         return [
-            'title' => $context['title'] ?? 'Invalid data have been provided',
-            'detail' => $messages ? implode("\n", $messages) : '',
-            'violations' => $violations,
+            'status' => 'failed',
+            'message' => $context['title'] ?? 'Invalid data have been provided',
+            'data' => [
+                'violations' => $violations
+            ]
         ];
     }
 
@@ -35,17 +37,15 @@ class ConstraintViolationListNormalizer implements NormalizerInterface, Cacheabl
      *
      * @return array
      */
-    private function getMessagesAndViolations(ConstraintViolationListInterface $constraintViolationList): array
+    private function getViolations(ConstraintViolationListInterface $constraintViolationList): array
     {
-        $violations = $messages = [];
+        $violations = [];
 
         /** @var ConstraintViolation $violation */
         foreach ($constraintViolationList as $violation) {
             $violations[$violation->getPropertyPath()] = $violation->getMessage();
-            $propertyPath = $violation->getPropertyPath();
-            $messages[] = ($propertyPath ? $propertyPath . ': ' : '') . $violation->getMessage();
         }
 
-        return [$messages, $violations];
+        return $violations;
     }
 }

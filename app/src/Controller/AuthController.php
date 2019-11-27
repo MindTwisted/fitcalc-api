@@ -5,14 +5,13 @@ namespace App\Controller;
 use App\Entity\Email;
 use App\Entity\User;
 use App\Serializer\Normalizer\ConstraintViolationListNormalizer;
-use Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -38,24 +37,26 @@ class AuthController extends AbstractController
      * @param ValidatorInterface $validator
      * @param ConstraintViolationListNormalizer $constraintViolationListNormalizer
      * @param Request $request
-     * @param SerializerInterface $serializer
      * @param UserPasswordEncoderInterface $userPasswordEncoder
      *
      * @return JsonResponse
      *
      * @throws ExceptionInterface
-     * @throws Exception
      */
     public function register(
         ValidatorInterface $validator,
         ConstraintViolationListNormalizer $constraintViolationListNormalizer,
         Request $request,
-        SerializerInterface $serializer,
         UserPasswordEncoderInterface $userPasswordEncoder
     ): JsonResponse
     {
-        /** @var User $user */
-        $user = $serializer->deserialize($request->getContent(), User::class, 'json');
+        $user = new User();
+        $user->setFullname($request->get('fullname', ''));
+        $user->setUsername($request->get('username', ''));
+        $user->setPassword($request->get('password', ''));
+        $email = new Email();
+        $email->setEmail($request->get('email', ''));
+        $user->addEmail($email);
         $errors = $validator->validate($user);
 
         if (count($errors) > 0) {
@@ -67,15 +68,14 @@ class AuthController extends AbstractController
 
         $user->setPassword($userPasswordEncoder->encodePassword($user, $user->getPassword()));
 
-        /** @var Email $email */
-        $email = $user->getEmails()->first();
-        $email->setVerified(false);
-        $email->setHash(md5(random_bytes(10)));
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
 
-        /**
-         * 1) как при сохранении записывать created_at, updated_at
-         */
-        dd($user);
-        dd('valid');
+        return $this->json([
+            'status' => 'success',
+            'message' => sprintf('User %s has been registered.', $user->getFullname())
+        ]);
     }
 }
