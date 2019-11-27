@@ -52,10 +52,6 @@ access token хранится в базе не будет, он будет пр�
 ###Routes list
 
 ```
-POST /api/auth/register
-body: name, email, password
-protection: guest
-
 POST /api/auth/login
 body: email, password
 protection: guest
@@ -74,9 +70,6 @@ protection: guest
 
 GET /api/auth
 protection: user
-
-GET /register_email_confirmation?hash={hash}
-protection: hash
 
 GET /reset_password?token={token}
 protection: token
