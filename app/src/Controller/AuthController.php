@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Email;
 use App\Entity\User;
 use App\Repository\EmailRepository;
+use App\Repository\UserRepository;
 use App\Serializer\Normalizer\ConstraintViolationListNormalizer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
@@ -115,13 +116,12 @@ class AuthController extends AbstractController
      * @Route("/register_email_confirmation/{hash}", name="registerEmailConfirmation", methods={"GET"})
      *
      * @param string $hash
-     * @param Request $request
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
      */
-    public function registerEmailConfirmation(string $hash, Request $request): JsonResponse
+    public function registerEmailConfirmation(string $hash): JsonResponse
     {
         /** @var EmailRepository $emailRepository */
         $emailRepository = $this->getDoctrine()->getRepository(Email::class);
@@ -146,5 +146,50 @@ class AuthController extends AbstractController
         return $this->json([
             'message' => sprintf('Email %s has been confirmed.', $email->getEmail())
         ]);
+    }
+
+    /**
+     * @Route("/login", name="login", methods={"POST"})
+     *
+     * @param Request $request
+     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     */
+    public function login(Request $request, UserPasswordEncoderInterface $userPasswordEncoder): JsonResponse
+    {
+        $username = $request->get('username');
+        $email = $request->get('email');
+        $password = $request->get('password');
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->getDoctrine()->getRepository(User::class);
+        $user = null;
+
+        if ($username && $password) {
+            $user = $userRepository->findOneByUsernameJoinedToVerifiedEmail($username);
+        }
+
+        if (!$user && $email && $password) {
+            $user = $userRepository->findOneByVerifiedEmail($email);
+        }
+
+        if (!$user) {
+            return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $isPasswordValid = $userPasswordEncoder->isPasswordValid($user, $password);
+
+        if (!$isPasswordValid) {
+            return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        /**
+         * TODO: generate access token and refresh token with different periods depend on user role
+         */
+
+        dd($user);
     }
 }
