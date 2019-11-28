@@ -14,7 +14,6 @@ class ConstraintViolationListNormalizer implements NormalizerInterface, Cacheabl
         $violations = $this->getViolations($object);
 
         return [
-            'status' => 'failed',
             'message' => $context['title'] ?? 'Invalid data have been provided',
             'data' => [
                 'violations' => $violations

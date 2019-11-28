@@ -78,14 +78,10 @@ class AuthController extends AbstractController
 
         $user->setPassword($userPasswordEncoder->encodePassword($user, $user->getPassword()));
 
-        $protocol = stripos($_SERVER['SERVER_PROTOCOL'], 'https') === 0 ? 'https://' : 'http://';
+        $protocol = $request->isSecure() ? 'https://' : 'http://';
         $domain = $_ENV['APP_DOMAIN'];
-        $emailConfirmationUrl = $protocol . $domain . $this->generateUrl(
-                'registerEmailConfirmation',
-                [
-                    'hash' => $email->getHash(),
-                ]
-            );
+        $url = $this->generateUrl('registerEmailConfirmation', ['hash' => $email->getHash()]);
+        $emailConfirmationUrl = $protocol . $domain . $url;
 
         try {
             $sendEmail = (new TemplatedEmail())
@@ -99,10 +95,9 @@ class AuthController extends AbstractController
         } catch (TransportExceptionInterface $exception) {
             return $this->json(
                 [
-                    'status' => 'failed',
-                    'message' => $exception->getMessage()
+                    'message' => 'Unexpected error has been occurred, please try again later.'
                 ],
-                JsonResponse::HTTP_BAD_REQUEST
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }
 
@@ -112,7 +107,6 @@ class AuthController extends AbstractController
         $entityManager->flush();
 
         return $this->json([
-            'status' => 'success',
             'message' => sprintf('User %s has been registered.', $user->getFullname())
         ]);
     }
@@ -136,7 +130,6 @@ class AuthController extends AbstractController
         if (!$email) {
             return $this->json(
                 [
-                    'status' => 'failed',
                     'message' => 'Forbidden.'
                 ],
                 JsonResponse::HTTP_FORBIDDEN
@@ -151,7 +144,6 @@ class AuthController extends AbstractController
         $entityManager->flush();
 
         return $this->json([
-            'status' => 'success',
             'message' => sprintf('Email %s has been confirmed.', $email->getEmail())
         ]);
     }
