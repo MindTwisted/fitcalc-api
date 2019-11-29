@@ -8,8 +8,10 @@ services:
     ports:
       - "8000:80"
     volumes:
-      - ./app:/app
+      - ./app:$APP_ROOT
     environment:
+      KEYS_PASSPHRASE: $KEYS_PASSPHRASE
+      APP_ROOT: $APP_ROOT
       MAILER_DSN: $MAILER_DSN
       APP_DOMAIN: $APP_DOMAIN
       DATABASE_URL: "mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}?serverVersion=${MYSQL_SERVER_VERSION}"

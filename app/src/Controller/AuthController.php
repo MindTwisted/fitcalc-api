@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Entity\Email;
 use App\Entity\User;
 use App\Repository\EmailRepository;
-use App\Repository\UserRepository;
 use App\Serializer\Normalizer\ConstraintViolationListNormalizer;
+use App\Services\AuthService;
+use App\Services\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,9 +34,12 @@ class AuthController extends AbstractController
 {
     /**
      * @Route("/", name="auth", methods={"GET"})
+     * @IsGranted("ROLE_USER")
      */
     public function index()
     {
+        dd('auth route');
+
         return $this->json(['message' => 'Coming soon.']);
     }
 
@@ -152,44 +157,43 @@ class AuthController extends AbstractController
      * @Route("/login", name="login", methods={"POST"})
      *
      * @param Request $request
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param UserService $userService
+     * @param AuthService $authService
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
+     * @throws Exception
      */
-    public function login(Request $request, UserPasswordEncoderInterface $userPasswordEncoder): JsonResponse
+    public function login(
+        Request $request,
+        UserService $userService,
+        AuthService $authService
+    ): JsonResponse
     {
-        $username = $request->get('username');
-        $email = $request->get('email');
-        $password = $request->get('password');
-
-        /** @var UserRepository $userRepository */
-        $userRepository = $this->getDoctrine()->getRepository(User::class);
-        $user = null;
-
-        if ($username && $password) {
-            $user = $userRepository->findOneByUsernameJoinedToVerifiedEmail($username);
-        }
-
-        if (!$user && $email && $password) {
-            $user = $userRepository->findOneByVerifiedEmail($email);
-        }
+        $user = $userService->getUser($request->get('username', ''), $request->get('email', ''));
 
         if (!$user) {
             return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
         }
 
-        $isPasswordValid = $userPasswordEncoder->isPasswordValid($user, $password);
+        $isPasswordValid = $authService->isPasswordValid($user, $request->get('password'));
 
         if (!$isPasswordValid) {
             return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
         }
 
-        /**
-         * TODO: generate access token and refresh token with different periods depend on user role
-         */
+        $refreshToken = $authService->generateRefreshToken();
+        $accessToken = $authService->generateAccessToken($user);
 
-        dd($user);
+        $userService->storeRefreshToken($user, $refreshToken, $request->server->get('HTTP_USER_AGENT'));
+
+        return $this->json([
+            'message' => sprintf('User %s has been successfully logged-in.', $user->getFullname()),
+            'data' => [
+                'refresh_token' => $refreshToken,
+                'access_token' => $accessToken
+            ]
+        ]);
     }
 }

@@ -62,7 +62,7 @@ class User implements UserInterface
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\RefreshToken", mappedBy="user", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity="App\Entity\RefreshToken", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
     private $refreshTokens;
 
@@ -84,6 +84,11 @@ class User implements UserInterface
         $this->refreshTokens = new ArrayCollection();
         $this->emails = new ArrayCollection();
         $this->passwordRecoveries = new ArrayCollection();
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array('ROLE_ADMIN', $this->getRoles());
     }
 
     public function getId(): ?int

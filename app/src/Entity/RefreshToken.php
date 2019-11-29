@@ -4,10 +4,12 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RefreshTokenRepository")
  * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("token")
  */
 class RefreshToken
 {
@@ -28,7 +30,7 @@ class RefreshToken
     private $user;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $token;
 
