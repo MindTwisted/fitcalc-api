@@ -4,11 +4,10 @@ namespace App\Services;
 
 
 use App\Entity\User;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Lcobucci\JWT\Builder;
-use Lcobucci\JWT\Signer\Key;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
+use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
 /**
  * Class AuthService
@@ -18,14 +17,28 @@ class AuthService
     /** @var UserPasswordEncoderInterface */
     private $userPasswordEncoder;
 
+    /** @var UserService */
+    private $userService;
+
+    /** @var JwtService */
+    private $jwtService;
+
     /**
      * AuthService constructor.
      *
      * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param UserService $userService
+     * @param JwtService $jwtService
      */
-    public function __construct(UserPasswordEncoderInterface $userPasswordEncoder)
+    public function __construct(
+        UserPasswordEncoderInterface $userPasswordEncoder,
+        UserService $userService,
+        JwtService $jwtService
+    )
     {
         $this->userPasswordEncoder = $userPasswordEncoder;
+        $this->userService = $userService;
+        $this->jwtService = $jwtService;
     }
 
     /**
@@ -62,19 +75,29 @@ class AuthService
      */
     public function generateAccessToken(User $user): string
     {
-        $signer = new Sha256();
-        $privateKeyPath = $_ENV['APP_ROOT'] . $_ENV['JWT_KEYS_PATH'] . '/' . $_ENV['JWT_PRIVATE_KEY_NAME'];
-        $privateKey = new Key("file://$privateKeyPath", $_ENV['KEYS_PASSPHRASE']);
-        $time = time();
+        return $this->jwtService->createTokenFromUser($user);
+    }
 
-        $token = (new Builder())
-            ->identifiedBy(md5(random_bytes(10)), true)
-            ->issuedAt($time)
-            ->canOnlyBeUsedAfter($time)
-            ->expiresAt($time + $_ENV['JWT_TTE'])
-            ->withClaim('user_id', $user->getId())
-            ->getToken($signer, $privateKey);
+    /**
+     * @param string $accessToken
+     *
+     * @return User|null
+     *
+     * @throws NonUniqueResultException
+     * @throws AuthenticationException
+     */
+    public function getUserByAccessToken(string $accessToken): ?User
+    {
+        $token = $this->jwtService->parseToken($accessToken);
+        $this->jwtService->validateToken($token);
+        $this->jwtService->verifyToken($token);
 
-        return $token;
+        try {
+            $userId = $token->getClaim('user_id');
+        } catch (Exception $exception) {
+            throw new AuthenticationException("Can't find user credentials in token claims.");
+        }
+
+        return $this->userService->getUserById($userId);
     }
 }

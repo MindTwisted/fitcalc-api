@@ -38,7 +38,7 @@ class AuthController extends AbstractController
      */
     public function index()
     {
-        dd('auth route');
+        dd($this->getUser());
 
         return $this->json(['message' => 'Coming soon.']);
     }

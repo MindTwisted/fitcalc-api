@@ -54,6 +54,21 @@ class UserService
     }
 
     /**
+     * @param int $id
+     *
+     * @return User|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function getUserById(int $id): ?User
+    {
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->entityManager->getRepository(User::class);
+
+        return $userRepository->findOneByIdJoinedToVerifiedEmail($id);
+    }
+
+    /**
      * @param User $user
      * @param string $token
      * @param string $device

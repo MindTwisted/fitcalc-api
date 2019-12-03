@@ -4,6 +4,8 @@ namespace App\Security;
 
 
 use App\Entity\User;
+use App\Services\AuthService;
+use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,6 +20,19 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
  */
 class TokenAuthenticator extends AbstractGuardAuthenticator
 {
+    /** @var AuthService */
+    private $authService;
+
+    /**
+     * TokenAuthenticator constructor.
+     *
+     * @param AuthService $authService
+     */
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
+
     /**
      * Returns a response that directs the user to authenticate.
      *
@@ -61,7 +76,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request): bool
     {
-        return $request->headers->has('X-AUTH-TOKEN');
+        return $request->headers->has('Authorization');
     }
 
     /**
@@ -89,7 +104,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request): array
     {
         return [
-            'token' => $request->headers->get('X-AUTH-TOKEN')
+            'token' => $request->headers->get('Authorization')
         ];
     }
 
@@ -106,11 +121,13 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      *
      * @return UserInterface|null
      *
+     * @throws NonUniqueResultException
      */
     public function getUser($credentials, UserProviderInterface $userProvider): ?User
     {
-        return null;
-        // TODO: Implement getUser() method.
+        $token = substr($credentials['token'], 7);
+
+        return $this->authService->getUserByAccessToken($token);
     }
 
     /**
@@ -122,15 +139,14 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      * The *credentials* are the return value from getCredentials()
      *
      * @param mixed $credentials
+     * @param UserInterface $user
      *
      * @return bool
      *
-     * @throws AuthenticationException
      */
-    public function checkCredentials($credentials, UserInterface $user)
+    public function checkCredentials($credentials, UserInterface $user): bool
     {
-        dd(123);
-        // TODO: Implement checkCredentials() method.
+        return true;
     }
 
     /**
@@ -142,12 +158,19 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      * If you return null, the request will continue, but the user will
      * not be authenticated. This is probably not what you want to do.
      *
+     * @param Request $request
+     * @param AuthenticationException $exception
+     *
      * @return Response|null
      */
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        dd(22);
-        // TODO: Implement onAuthenticationFailure() method.
+        return new JsonResponse(
+            [
+                'message' => 'Authentication failed. Please repeat login procedure.'
+            ],
+            JsonResponse::HTTP_FORBIDDEN
+        );
     }
 
     /**
@@ -159,11 +182,15 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      * If you return null, the current request will continue, and the user
      * will be authenticated. This makes sense, for example, with an API.
      *
+     * @param Request $request
+     * @param TokenInterface $token
+     * @param string $providerKey
+     *
      * @return Response|null
      */
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $providerKey): ?Response
     {
-        // TODO: Implement onAuthenticationSuccess() method.
+        return null;
     }
 
     /**
@@ -180,8 +207,8 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      *
      * @return bool
      */
-    public function supportsRememberMe()
+    public function supportsRememberMe(): bool
     {
-        // TODO: Implement supportsRememberMe() method.
+        return false;
     }
 }
