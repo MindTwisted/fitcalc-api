@@ -67,9 +67,6 @@ POST /api/auth/reset_password
 body: email
 protection: guest
 
-GET /api/auth
-protection: user
-
 GET /reset_password?token={token}
 protection: token
 
@@ -77,7 +74,6 @@ POST /reset_password
 body: token, password, password_repeat
 protection: token
 
-GET /api/users
 GET /api/users/{id}
 protection: admin
 

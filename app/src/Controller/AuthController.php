@@ -6,6 +6,7 @@ use App\Entity\Email;
 use App\Entity\User;
 use App\Repository\EmailRepository;
 use App\Serializer\Normalizer\ConstraintViolationListNormalizer;
+use App\Serializer\Normalizer\UserNormalizer;
 use App\Services\AuthService;
 use App\Services\UserService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -34,13 +35,20 @@ class AuthController extends AbstractController
 {
     /**
      * @Route("/", name="auth", methods={"GET"})
+     *
      * @IsGranted("ROLE_USER")
+     *
+     * @param UserNormalizer $userNormalizer
+     *
+     * @return JsonResponse
      */
-    public function index()
+    public function index(UserNormalizer $userNormalizer)
     {
-        dd($this->getUser());
-
-        return $this->json(['message' => 'Coming soon.']);
+        return $this->json([
+            'data' => [
+                'user' => $userNormalizer->normalize($this->getUser())
+            ]
+        ]);
     }
 
     /**
@@ -77,7 +85,10 @@ class AuthController extends AbstractController
 
         if (count($errors) > 0) {
             return $this->json(
-                $constraintViolationListNormalizer->normalize($errors),
+                [
+                    'message' => 'Invalid data have been provided.',
+                    'data' => $constraintViolationListNormalizer->normalize($errors)
+                ],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }

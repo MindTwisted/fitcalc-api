@@ -13,12 +13,7 @@ class ConstraintViolationListNormalizer implements NormalizerInterface, Cacheabl
     {
         $violations = $this->getViolations($object);
 
-        return [
-            'message' => $context['title'] ?? 'Invalid data have been provided',
-            'data' => [
-                'violations' => $violations
-            ]
-        ];
+        return compact('violations');
     }
 
     public function supportsNormalization($data, $format = null): bool
