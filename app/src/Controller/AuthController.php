@@ -3,26 +3,22 @@
 namespace App\Controller;
 
 use App\Entity\Email;
-use App\Entity\User;
+use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
-use App\Serializer\Normalizer\ConstraintViolationListNormalizer;
 use App\Serializer\Normalizer\UserNormalizer;
 use App\Services\AuthService;
+use App\Services\EmailService;
 use App\Services\UserService;
+use App\Services\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Serializer\Exception\ExceptionInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Class AuthController
@@ -54,66 +50,32 @@ class AuthController extends AbstractController
     /**
      * @Route("/register", name="register", methods={"POST"})
      *
-     * @param ValidatorInterface $validator
-     * @param ConstraintViolationListNormalizer $constraintViolationListNormalizer
      * @param Request $request
-     * @param UserPasswordEncoderInterface $userPasswordEncoder
-     * @param MailerInterface $mailer
+     * @param UserService $userService
+     * @param ValidationService $validationService
+     * @param EmailService $emailService
      *
      * @return JsonResponse
      *
-     * @throws ExceptionInterface
+     * @throws ValidationException
      * @throws Exception
      */
     public function register(
-        ValidatorInterface $validator,
-        ConstraintViolationListNormalizer $constraintViolationListNormalizer,
         Request $request,
-        UserPasswordEncoderInterface $userPasswordEncoder,
-        MailerInterface $mailer
+        UserService $userService,
+        ValidationService $validationService,
+        EmailService $emailService
     ): JsonResponse
     {
-        $user = new User();
-        $user->setFullname($request->get('fullname', ''));
-        $user->setUsername($request->get('username', ''));
-        $user->setPassword($request->get('password', ''));
-        $email = new Email();
-        $email->setEmail($request->get('email', ''));
-        $email->setPrePersistDefaults();
-        $user->addEmail($email);
-        $errors = $validator->validate($user);
-
-        if (count($errors) > 0) {
-            return $this->json(
-                [
-                    'message' => 'Invalid data have been provided.',
-                    'data' => $constraintViolationListNormalizer->normalize($errors)
-                ],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
-        }
-
-        $user->setPassword($userPasswordEncoder->encodePassword($user, $user->getPassword()));
-
-        $protocol = $request->isSecure() ? 'https://' : 'http://';
-        $domain = $_ENV['APP_DOMAIN'];
-        $url = $this->generateUrl('registerEmailConfirmation', ['hash' => $email->getHash()]);
-        $emailConfirmationUrl = $protocol . $domain . $url;
+        $user = $userService->createUserFromRequest($request);
+        $validationService->validate($user);
+        $userService->encodeUserPassword($user);
 
         try {
-            $sendEmail = (new TemplatedEmail())
-                ->from('admin@' . $domain)
-                ->to($email->getEmail())
-                ->subject('Email confirmation')
-                ->htmlTemplate('emails/email_confirmation.html.twig')
-                ->context(compact('user', 'emailConfirmationUrl'));
-
-            $mailer->send($sendEmail);
+            $emailService->sendEmailConfirmationMessage($request, $user);
         } catch (TransportExceptionInterface $exception) {
             return $this->json(
-                [
-                    'message' => 'Unexpected error has been occurred, please try again later.'
-                ],
+                ['message' => 'Unexpected error has been occurred, please try again later.'],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -182,7 +144,7 @@ class AuthController extends AbstractController
         AuthService $authService
     ): JsonResponse
     {
-        $user = $userService->getUser($request->get('username', ''), $request->get('email', ''));
+        $user = $userService->getUserByUsernameOrEmail($request->get('username', ''), $request->get('email', ''));
 
         if (!$user) {
             return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);

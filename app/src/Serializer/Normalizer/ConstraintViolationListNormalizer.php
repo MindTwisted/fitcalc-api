@@ -9,6 +9,13 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 class ConstraintViolationListNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
+    /**
+     * @param mixed $object
+     * @param null $format
+     * @param array $context
+     *
+     * @return array
+     */
     public function normalize($object, $format = null, array $context = []): array
     {
         $violations = $this->getViolations($object);
@@ -16,11 +23,20 @@ class ConstraintViolationListNormalizer implements NormalizerInterface, Cacheabl
         return compact('violations');
     }
 
+    /**
+     * @param mixed $data
+     * @param null $format
+     *
+     * @return bool
+     */
     public function supportsNormalization($data, $format = null): bool
     {
         return $data instanceof ConstraintViolationListInterface;
     }
 
+    /**
+     * @return bool
+     */
     public function hasCacheableSupportsMethod(): bool
     {
         return true;
