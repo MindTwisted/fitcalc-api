@@ -188,4 +188,41 @@ class AuthController extends AbstractController
 
         return $this->json(['data' => compact('refreshTokens')]);
     }
+
+    /**
+     * @Route(
+     *     "/refresh_tokens/{id}",
+     *     requirements={"id"="\d+"},
+     *     name="deleteRefreshTokenById",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @IsGranted("ROLE_USER")
+     *
+     * @param int $id
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     */
+    public function deleteRefreshTokenOfCurrentUserById(int $id): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
+        $refreshToken = $refreshTokenRepository->findOneByIdAndUserId($id, $user->getId());
+
+        if (!$refreshToken) {
+            return $this->json(['message' => 'Not found.'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->remove($refreshToken);
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Refresh token has been successfully removed.']);
+    }
 }

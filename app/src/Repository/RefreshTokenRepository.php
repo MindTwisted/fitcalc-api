@@ -6,6 +6,7 @@ use App\Entity\RefreshToken;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method RefreshToken|null find($id, $lockMode = null, $lockVersion = null)
@@ -39,15 +40,22 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    /*
-    public function findOneBySomeField($value): ?RefreshToken
+    /**
+     * @param int $id
+     * @param int $userId
+     *
+     * @return RefreshToken|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneByIdAndUserId(int $id, int $userId): ?RefreshToken
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('r.id = :id')
+            ->setParameter('id', $id)
+            ->andWhere('r.user = :userId')
+            ->setParameter('userId', $userId)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
 }
