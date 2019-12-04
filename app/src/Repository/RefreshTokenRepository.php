@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\RefreshToken;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 
@@ -23,12 +24,16 @@ class RefreshTokenRepository extends ServiceEntityRepository
      * @param int $value
      *
      * @return RefreshToken[]
+     *
+     * @throws \Exception
      */
-    public function findByUserId(int $value): array
+    public function findNotExpiredByUserId(int $value): array
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.user = :val')
             ->setParameter('val', $value)
+            ->andWhere('r.expiresAt > :now')
+            ->setParameter('now', new DateTime())
             ->orderBy('r.id', 'ASC')
             ->getQuery()
             ->getResult();

@@ -174,6 +174,8 @@ class AuthController extends AbstractController
      * @IsGranted("ROLE_USER")
      *
      * @return JsonResponse
+     *
+     * @throws Exception
      */
     public function refreshTokensIndex(): JsonResponse
     {
@@ -182,7 +184,7 @@ class AuthController extends AbstractController
 
         /** @var RefreshTokenRepository $refreshTokenRepository */
         $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
-        $refreshTokens = $refreshTokenRepository->findByUserId($user->getId());
+        $refreshTokens = $refreshTokenRepository->findNotExpiredByUserId($user->getId());
 
         return $this->json(['data' => compact('refreshTokens')]);
     }
