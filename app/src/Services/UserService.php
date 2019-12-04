@@ -84,9 +84,11 @@ class UserService
      * @param string $token
      * @param string $device
      *
+     * @return RefreshToken
+     *
      * @throws Exception
      */
-    public function storeRefreshToken(User $user, string $token, string $device): void
+    public function storeRefreshToken(User $user, string $token, string $device): RefreshToken
     {
         $tokenTTE = $user->isAdmin() ? $_ENV['REFRESH_TOKEN_ADMIN_TTE'] : $_ENV['REFRESH_TOKEN_USER_TTE'];
         $expiresAt = new DateTime('now');
@@ -101,6 +103,8 @@ class UserService
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        return $refreshToken;
     }
 
     /**

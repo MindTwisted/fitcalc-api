@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Email;
+use App\Entity\RefreshToken;
+use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
-use App\Serializer\Normalizer\UserNormalizer;
+use App\Repository\RefreshTokenRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Services\UserService;
@@ -34,17 +36,13 @@ class AuthController extends AbstractController
      *
      * @IsGranted("ROLE_USER")
      *
-     * @param UserNormalizer $userNormalizer
-     *
      * @return JsonResponse
      */
-    public function index(UserNormalizer $userNormalizer)
+    public function index()
     {
-        return $this->json([
-            'data' => [
-                'user' => $userNormalizer->normalize($this->getUser())
-            ]
-        ]);
+        $user = $this->getUser();
+
+        return $this->json(['data' => compact('user')]);
     }
 
     /**
@@ -86,7 +84,8 @@ class AuthController extends AbstractController
         $entityManager->flush();
 
         return $this->json([
-            'message' => sprintf('User %s has been registered.', $user->getFullname())
+            'message' => 'User has been registered. Please confirm your email address.',
+            'data' => compact('user')
         ]);
     }
 
@@ -106,12 +105,7 @@ class AuthController extends AbstractController
         $email = $emailRepository->findNotVerifiedOneByHash($hash);
 
         if (!$email) {
-            return $this->json(
-                [
-                    'message' => 'Forbidden.'
-                ],
-                JsonResponse::HTTP_FORBIDDEN
-            );
+            return $this->json(['message' => 'Forbidden.'], JsonResponse::HTTP_FORBIDDEN);
         }
 
         $email->setVerified(true);
@@ -121,9 +115,7 @@ class AuthController extends AbstractController
         $entityManager->persist($email);
         $entityManager->flush();
 
-        return $this->json([
-            'message' => sprintf('Email %s has been confirmed.', $email->getEmail())
-        ]);
+        return $this->json(['message' => sprintf('Email %s has been confirmed.', $email->getEmail())]);
     }
 
     /**
@@ -156,17 +148,42 @@ class AuthController extends AbstractController
             return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
         }
 
-        $refreshToken = $authService->generateRefreshToken();
         $accessToken = $authService->generateAccessToken($user);
-
-        $userService->storeRefreshToken($user, $refreshToken, $request->server->get('HTTP_USER_AGENT'));
+        $refreshToken = $userService->storeRefreshToken(
+            $user,
+            $authService->generateRefreshToken(),
+            $request->server->get('HTTP_USER_AGENT')
+        );
 
         return $this->json([
             'message' => sprintf('User %s has been successfully logged-in.', $user->getFullname()),
             'data' => [
-                'refresh_token' => $refreshToken,
-                'access_token' => $accessToken
+                'access_token' => $accessToken,
+                'refresh_token' => [
+                    'id' => $refreshToken->getId(),
+                    'token' => $refreshToken->getToken(),
+                    'expires_at' => $refreshToken->getExpiresAt()
+                ]
             ]
         ]);
+    }
+
+    /**
+     * @Route("/refresh_tokens", name="refreshTokensIndex", methods={"GET"})
+     *
+     * @IsGranted("ROLE_USER")
+     *
+     * @return JsonResponse
+     */
+    public function refreshTokensIndex(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
+        $refreshTokens = $refreshTokenRepository->findByUserId($user->getId());
+
+        return $this->json(['data' => compact('refreshTokens')]);
     }
 }

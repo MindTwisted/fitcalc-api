@@ -19,22 +19,20 @@ class RefreshTokenRepository extends ServiceEntityRepository
         parent::__construct($registry, RefreshToken::class);
     }
 
-    // /**
-    //  * @return RefreshToken[] Returns an array of RefreshToken objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param int $value
+     *
+     * @return RefreshToken[]
+     */
+    public function findByUserId(int $value): array
     {
         return $this->createQueryBuilder('r')
-            ->andWhere('r.exampleField = :val')
+            ->andWhere('r.user = :val')
             ->setParameter('val', $value)
             ->orderBy('r.id', 'ASC')
-            ->setMaxResults(10)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
-    */
 
     /*
     public function findOneBySomeField($value): ?RefreshToken

@@ -55,10 +55,6 @@ access token хранится в базе не будет, он будет пр�
 ###Routes list
 
 ```
-GET /api/auth/refresh_tokens
-protection: user
-description: return list of user's refresh tokens in format id, device, expires_at
-
 POST /api/auth/refresh
 body: refresh_token
 protection: user

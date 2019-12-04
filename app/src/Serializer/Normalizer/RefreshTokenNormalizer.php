@@ -2,18 +2,21 @@
 
 namespace App\Serializer\Normalizer;
 
-use App\Entity\User;
+use App\Entity\RefreshToken;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
+    /**
+     * RefreshTokenNormalizer constructor.
+     */
     public function __construct()
     {
     }
 
     /**
-     * @param User $object
+     * @param RefreshToken $object
      * @param null $format
      * @param array $context
      *
@@ -21,22 +24,27 @@ class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInte
      */
     public function normalize($object, $format = null, array $context = array()): array
     {
-        $data = [
+        return [
             'id' => $object->getId(),
-            'fullname' => $object->getFullname(),
-            'username' => $object->getUsername(),
-            'email' => $object->getEmails()[0]->getEmail(),
-            'roles' => $object->getRoles()
+            'device' => $object->getDevice(),
+            'expires_at' => $object->getExpiresAt()
         ];
-
-        return $data;
     }
 
+    /**
+     * @param mixed $data
+     * @param null $format
+     *
+     * @return bool
+     */
     public function supportsNormalization($data, $format = null): bool
     {
-        return $data instanceof User;
+        return $data instanceof RefreshToken;
     }
 
+    /**
+     * @return bool
+     */
     public function hasCacheableSupportsMethod(): bool
     {
         return true;
