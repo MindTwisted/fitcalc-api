@@ -193,7 +193,7 @@ class AuthController extends AbstractController
      * @Route(
      *     "/refresh_tokens/{id}",
      *     requirements={"id"="\d+"},
-     *     name="deleteRefreshTokenById",
+     *     name="deleteRefreshTokenOfCurrentUserById",
      *     methods={"DELETE"}
      * )
      *
@@ -212,7 +212,7 @@ class AuthController extends AbstractController
 
         /** @var RefreshTokenRepository $refreshTokenRepository */
         $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
-        $refreshToken = $refreshTokenRepository->findOneByIdAndUserId($id, $user->getId());
+        $refreshToken = $refreshTokenRepository->findOneNotExpiredByIdAndUserId($id, $user->getId());
 
         if (!$refreshToken) {
             return $this->json(['message' => 'Not found.'], JsonResponse::HTTP_NOT_FOUND);
@@ -225,4 +225,29 @@ class AuthController extends AbstractController
 
         return $this->json(['message' => 'Refresh token has been successfully removed.']);
     }
+
+    /**
+     * @Route("/refresh_tokens", name="deleteAllRefreshTokensOfCurrentUser", methods={"DELETE"})
+     *
+     * @IsGranted("ROLE_USER")
+     *
+     * @return JsonResponse
+     *
+     * @throws Exception
+     */
+    public function deleteAllRefreshTokensOfCurrentUser(): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
+        $refreshTokenRepository->deleteNotExpiredByUserId($user->getId());
+
+        return $this->json(['message' => 'Refresh tokens have been successfully removed.']);
+    }
+
+    /**
+     * TODO: add IP to refresh tokens table, make refresh tokens soft deletable
+     */
 }

@@ -7,6 +7,7 @@ use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
 /**
  * @method RefreshToken|null find($id, $lockMode = null, $lockVersion = null)
@@ -26,7 +27,7 @@ class RefreshTokenRepository extends ServiceEntityRepository
      *
      * @return RefreshToken[]
      *
-     * @throws \Exception
+     * @throws Exception
      */
     public function findNotExpiredByUserId(int $value): array
     {
@@ -48,14 +49,33 @@ class RefreshTokenRepository extends ServiceEntityRepository
      *
      * @throws NonUniqueResultException
      */
-    public function findOneByIdAndUserId(int $id, int $userId): ?RefreshToken
+    public function findOneNotExpiredByIdAndUserId(int $id, int $userId): ?RefreshToken
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.id = :id')
             ->setParameter('id', $id)
             ->andWhere('r.user = :userId')
             ->setParameter('userId', $userId)
+            ->andWhere('r.expiresAt > :now')
+            ->setParameter('now', new DateTime())
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @param int $userId
+     *
+     * @throws Exception
+     */
+    public function deleteNotExpiredByUserId(int $userId): void
+    {
+        $this->createQueryBuilder('r')
+            ->andWhere('r.user = :userId')
+            ->setParameter('userId', $userId)
+            ->andWhere('r.expiresAt > :now')
+            ->setParameter('now', new DateTime())
+            ->delete()
+            ->getQuery()
+            ->getResult();
     }
 }
