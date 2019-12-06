@@ -29,13 +29,14 @@ class RefreshTokenRepository extends ServiceEntityRepository
      *
      * @throws Exception
      */
-    public function findNotExpiredByUserId(int $value): array
+    public function findNotExpiredAndNotDeletedByUserId(int $value): array
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.user = :val')
             ->setParameter('val', $value)
             ->andWhere('r.expiresAt > :now')
             ->setParameter('now', new DateTime())
+            ->andWhere('r.deletedAt is NULL')
             ->orderBy('r.id', 'ASC')
             ->getQuery()
             ->getResult();
@@ -49,7 +50,7 @@ class RefreshTokenRepository extends ServiceEntityRepository
      *
      * @throws NonUniqueResultException
      */
-    public function findOneNotExpiredByIdAndUserId(int $id, int $userId): ?RefreshToken
+    public function findOneNotExpiredAndNotDeletedByIdAndUserId(int $id, int $userId): ?RefreshToken
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.id = :id')
@@ -58,6 +59,7 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->setParameter('userId', $userId)
             ->andWhere('r.expiresAt > :now')
             ->setParameter('now', new DateTime())
+            ->andWhere('r.deletedAt is NULL')
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -67,15 +69,17 @@ class RefreshTokenRepository extends ServiceEntityRepository
      *
      * @throws Exception
      */
-    public function deleteNotExpiredByUserId(int $userId): void
+    public function softDeleteNotExpiredAndNotDeletedByUserId(int $userId): void
     {
         $this->createQueryBuilder('r')
+            ->update()
+            ->set('r.deletedAt', ':now')
             ->andWhere('r.user = :userId')
             ->setParameter('userId', $userId)
             ->andWhere('r.expiresAt > :now')
             ->setParameter('now', new DateTime())
-            ->delete()
+            ->andWhere('r.deletedAt is NULL')
             ->getQuery()
-            ->getResult();
+            ->execute();
     }
 }
