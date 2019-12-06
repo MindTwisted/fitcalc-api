@@ -8,13 +8,11 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RefreshTokenRepository")
- * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("token")
  */
 class RefreshToken
 {
     use TimestampableEntity;
-    use UpdateTimestampsTrait;
 
     /**
      * @ORM\Id()

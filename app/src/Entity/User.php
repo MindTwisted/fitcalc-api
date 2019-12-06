@@ -12,13 +12,11 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("username")
  */
 class User implements UserInterface
 {
     use TimestampableEntity;
-    use UpdateTimestampsTrait;
 
     /**
      * @ORM\Id()

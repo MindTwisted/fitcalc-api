@@ -17,7 +17,6 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 class Email
 {
     use TimestampableEntity;
-    use UpdateTimestampsTrait;
 
     /**
      * @ORM\Id()
