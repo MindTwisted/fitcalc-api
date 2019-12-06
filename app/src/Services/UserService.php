@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Entity\Email;
 use App\Entity\RefreshToken;
 use App\Entity\User;
+use App\Exception\ValidationException;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,19 +26,25 @@ class UserService
     /** @var UserPasswordEncoderInterface */
     private $userPasswordEncoder;
 
+    /** @var ValidationService */
+    private $validationService;
+
     /**
      * UserService constructor.
      *
      * @param EntityManagerInterface $entityManager
      * @param UserPasswordEncoderInterface $userPasswordEncoder
+     * @param ValidationService $validationService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        UserPasswordEncoderInterface $userPasswordEncoder
+        UserPasswordEncoderInterface $userPasswordEncoder,
+        ValidationService $validationService
     )
     {
         $this->entityManager = $entityManager;
         $this->userPasswordEncoder = $userPasswordEncoder;
+        $this->validationService = $validationService;
     }
 
     /**
@@ -83,12 +90,18 @@ class UserService
      * @param User $user
      * @param string $token
      * @param string $device
+     * @param string $ipAddress
      *
      * @return RefreshToken
      *
-     * @throws Exception
+     * @throws ValidationException
      */
-    public function storeRefreshToken(User $user, string $token, string $device): RefreshToken
+    public function storeRefreshToken(
+        User $user,
+        string $token,
+        string $device,
+        string $ipAddress
+    ): RefreshToken
     {
         $tokenTTE = $user->isAdmin() ? $_ENV['REFRESH_TOKEN_ADMIN_TTE'] : $_ENV['REFRESH_TOKEN_USER_TTE'];
         $expiresAt = new DateTime('now');
@@ -97,9 +110,12 @@ class UserService
         $refreshToken = new RefreshToken();
         $refreshToken->setDevice($device);
         $refreshToken->setToken($token);
+        $refreshToken->setIpAddress($ipAddress);
         $refreshToken->setExpiresAt($expiresAt);
 
         $user->addRefreshToken($refreshToken);
+
+        $this->validationService->validate($refreshToken);
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();

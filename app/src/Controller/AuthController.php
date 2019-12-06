@@ -152,7 +152,8 @@ class AuthController extends AbstractController
         $refreshToken = $userService->storeRefreshToken(
             $user,
             $authService->generateRefreshToken(),
-            $request->server->get('HTTP_USER_AGENT')
+            $request->server->get('HTTP_USER_AGENT'),
+            $request->server->get('REMOTE_ADDR')
         );
 
         return $this->json([
@@ -254,8 +255,4 @@ class AuthController extends AbstractController
 
         return $this->json(['message' => 'Refresh tokens have been successfully removed.']);
     }
-
-    /**
-     * TODO: add IP to refresh tokens table
-     */
 }

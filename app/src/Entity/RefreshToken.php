@@ -7,6 +7,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\RefreshTokenRepository")
@@ -40,6 +41,13 @@ class RefreshToken
      * @ORM\Column(type="string", length=255)
      */
     private $device;
+
+    /**
+     * @ORM\Column(type="string", length=15)
+     *
+     * @Assert\Ip
+     */
+    private $ipAddress;
 
     /**
      * @ORM\Column(type="datetime")
@@ -83,6 +91,18 @@ class RefreshToken
     public function setDevice(string $device): self
     {
         $this->device = $device;
+
+        return $this;
+    }
+
+    public function getIpAddress(): ?string
+    {
+        return $this->ipAddress;
+    }
+
+    public function setIpAddress(string $ipAddress): self
+    {
+        $this->ipAddress = $ipAddress;
 
         return $this;
     }
