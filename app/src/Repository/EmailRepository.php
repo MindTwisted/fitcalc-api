@@ -21,18 +21,37 @@ class EmailRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param string $value
+     * @param string $hash
      *
      * @return Email|null
      *
      * @throws NonUniqueResultException
      */
-    public function findNotVerifiedOneByHash(string $value): ?Email
+    public function findNotVerifiedOneByHash(string $hash): ?Email
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.hash = :val')
+            ->andWhere('e.hash = :hash')
+            ->setParameter('hash', $hash)
             ->andWhere('e.verified = 0')
-            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return Email|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findVerifiedOneByEmailJoinedToUser(string $email): ?Email
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.email = :email')
+            ->setParameter('email', $email)
+            ->andWhere('e.verified = 1')
+            ->join('e.user', 'u')
+            ->addSelect('u')
             ->getQuery()
             ->getOneOrNullResult();
     }

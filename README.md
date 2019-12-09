@@ -54,19 +54,14 @@ access token хранится в базе не будет, он будет пр�
 
 3) на сервере будет работать крон, который раз в неделю будет удалять expired и soft deleted refresh tokens старше 3х месяцев
 
+4) на сервере будет работать крон, который раз в день будет удалять записи в таблице password recovery, которые старше 24 часов
+
 ###Routes list
 
 ```
-POST /api/auth/reset_password
-body: email
-protection: guest
-
-GET /reset_password?token={token}
-protection: token
-
-POST /reset_password
-body: token, password, password_repeat
-protection: token
+POST /api/auth/reset_password_confirmation
+body: token, password
+protection: token, app_user
 
 GET /api/users/{id}
 protection: admin

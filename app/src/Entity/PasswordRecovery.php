@@ -3,10 +3,14 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\PasswordRecoveryRepository")
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("token")
  */
 class PasswordRecovery
 {
@@ -26,9 +30,21 @@ class PasswordRecovery
     private $user;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      */
     private $token;
+
+    /**
+     * @ORM\PrePersist()
+     *
+     * @throws Exception
+     */
+    public function setPrePersistDefaults()
+    {
+        if ($this->token === null) {
+            $this->token = md5(random_bytes(10));
+        }
+    }
 
     public function getId(): ?int
     {

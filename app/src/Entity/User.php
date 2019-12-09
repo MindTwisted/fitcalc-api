@@ -89,6 +89,11 @@ class User implements UserInterface
         return in_array('ROLE_ADMIN', $this->getRoles());
     }
 
+    public function isAppUser(): bool
+    {
+        return in_array('ROLE_APP_USER', $this->getRoles());
+    }
+
     public function getId(): ?int
     {
         return $this->id;

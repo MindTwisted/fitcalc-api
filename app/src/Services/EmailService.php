@@ -3,6 +3,7 @@
 namespace App\Services;
 
 
+use App\Entity\PasswordRecovery;
 use App\Entity\User;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;
@@ -50,6 +51,26 @@ class EmailService
             ->subject('Email confirmation')
             ->htmlTemplate('emails/email_confirmation.html.twig')
             ->context(compact('user', 'emailConfirmationUrl'));
+
+        $this->mailer->send($sendEmail);
+    }
+
+    /**
+     * @param User $user
+     * @param string $token
+     *
+     * @throws TransportExceptionInterface
+     */
+    public function sendPasswordRecoveryMessage(User $user, string $token): void
+    {
+        $domain = $_ENV['APP_DOMAIN'];
+        $email = $user->getEmails()->first();
+        $sendEmail = (new TemplatedEmail())
+            ->from('admin@' . $domain)
+            ->to($email->getEmail())
+            ->subject('Password recovery')
+            ->htmlTemplate('emails/password_recovery.html.twig')
+            ->context(compact('user', 'token'));
 
         $this->mailer->send($sendEmail);
     }
