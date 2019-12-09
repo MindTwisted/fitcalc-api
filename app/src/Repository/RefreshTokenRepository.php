@@ -82,4 +82,25 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->getQuery()
             ->execute();
     }
+
+    /**
+     * @param string $token
+     *
+     * @return RefreshToken|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneNotExpiredAndNotDeletedByTokenJoinedToUser(string $token): ?RefreshToken
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.token = :token')
+            ->setParameter('token', $token)
+            ->andWhere('r.expiresAt > :now')
+            ->setParameter('now', new DateTime())
+            ->andWhere('r.deletedAt is NULL')
+            ->join('r.user', 'u')
+            ->addSelect('u')
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

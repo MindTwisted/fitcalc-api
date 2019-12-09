@@ -57,10 +57,6 @@ access token хранится в базе не будет, он будет пр�
 ###Routes list
 
 ```
-POST /api/auth/refresh
-body: refresh_token
-protection: user
-
 POST /api/auth/reset_password
 body: email
 protection: guest

@@ -255,4 +255,40 @@ class AuthController extends AbstractController
 
         return $this->json(['message' => 'Refresh tokens have been successfully removed.']);
     }
+
+    /**
+     * @Route("/refresh", name="refreshAccessToken", methods={"POST"})
+     *
+     * @param Request $request
+     * @param AuthService $authService
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     * @throws Exception
+     */
+    public function refreshAccessToken(Request $request, AuthService $authService): JsonResponse
+    {
+        $token = $request->get('refresh_token');
+
+        if (!$token) {
+            return $this->json(['message' => 'Please provide a refresh token.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        /** @var RefreshTokenRepository $refreshTokenRepository */
+        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
+        $refreshToken = $refreshTokenRepository->findOneNotExpiredAndNotDeletedByTokenJoinedToUser($token);
+
+        if (!$refreshToken) {
+            return $this->json(['message' => 'Refresh token is invalid.'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $user = $refreshToken->getUser();
+        $accessToken = $authService->generateAccessToken($user);
+
+        return $this->json([
+            'message' => sprintf('Access token for user %s has been successfully refreshed.', $user->getFullname()),
+            'data' => ['access_token' => $accessToken]
+        ]);
+    }
 }
