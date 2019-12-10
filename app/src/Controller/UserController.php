@@ -4,8 +4,12 @@ namespace App\Controller;
 
 use App\Entity\Email;
 use App\Entity\PasswordRecovery;
+use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
+use App\Repository\PasswordRecoveryRepository;
 use App\Services\EmailService;
+use App\Services\UserService;
+use App\Services\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
@@ -25,7 +29,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/reset_password", name="initiatePasswordReset", methods={"POST"})
+     * @Route("/initiate_password_reset", name="initiatePasswordReset", methods={"POST"})
      *
      * @param Request $request
      * @param EmailService $emailService
@@ -86,5 +90,63 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['message' => 'Password recovery token has been successfully sent.']);
+    }
+
+    /**
+     * @Route("/confirm_password_reset", name="confirmPasswordReset", methods={"POST"})
+     *
+     * @param Request $request
+     *
+     * @param ValidationService $validationService
+     * @param UserService $userService
+     *
+     * @return JsonResponse
+     * @throws NonUniqueResultException
+     * @throws ValidationException
+     */
+    public function confirmPasswordReset(
+        Request $request,
+        ValidationService $validationService,
+        UserService $userService
+    ): JsonResponse
+    {
+        $token = $request->get('token');
+
+        if (!$token) {
+            return $this->json(['message' => 'Please provide a token.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        /** @var PasswordRecoveryRepository $passwordRecoveryRepository */
+        $passwordRecoveryRepository = $this->getDoctrine()->getRepository(PasswordRecovery::class);
+        $passwordRecovery = $passwordRecoveryRepository->findOneByTokenJoinedToUser($token);
+
+        if (!$passwordRecovery) {
+            return $this->json(['message' => 'Token is invalid.'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $user = $passwordRecovery->getUser();
+
+        if (!$user->isAppUser()) {
+            return $this->json(['message' => 'Forbidden.'], JsonResponse::HTTP_FORBIDDEN);
+        }
+
+        $password = $request->get('password');
+
+        if (!$password) {
+            return $this->json(['message' => 'Please provide a password.'], JsonResponse::HTTP_BAD_REQUEST);
+        }
+
+        $user->setPassword($password);
+
+        $validationService->validate($user);
+        $userService->encodeUserPassword($user);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->remove($passwordRecovery);
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Password has been successfully changed.']);
     }
 }

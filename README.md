@@ -59,10 +59,6 @@ access token хранится в базе не будет, он будет пр�
 ###Routes list
 
 ```
-POST /api/auth/reset_password_confirmation
-body: token, password
-protection: token, app_user
-
 GET /api/users/{id}
 protection: admin
 

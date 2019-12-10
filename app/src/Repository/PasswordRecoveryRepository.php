@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\PasswordRecovery;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method PasswordRecovery|null find($id, $lockMode = null, $lockVersion = null)
@@ -17,6 +18,23 @@ class PasswordRecoveryRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, PasswordRecovery::class);
+    }
+
+    /**
+     * @param string $token
+     *
+     * @return PasswordRecovery|null
+     * @throws NonUniqueResultException
+     */
+    public function findOneByTokenJoinedToUser(string $token): ?PasswordRecovery
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.token = :token')
+            ->setParameter('token', $token)
+            ->join('p.user', 'u')
+            ->addSelect('u')
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     // /**
@@ -32,18 +50,6 @@ class PasswordRecoveryRepository extends ServiceEntityRepository
             ->setMaxResults(10)
             ->getQuery()
             ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?PasswordRecovery
-    {
-        return $this->createQueryBuilder('p')
-            ->andWhere('p.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
         ;
     }
     */
