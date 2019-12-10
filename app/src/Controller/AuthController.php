@@ -3,9 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Email;
-use App\Entity\PasswordRecovery;
 use App\Entity\RefreshToken;
-use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
 use App\Repository\RefreshTokenRepository;
@@ -172,93 +170,6 @@ class AuthController extends AbstractController
     }
 
     /**
-     * @Route(
-     *     "/refresh_tokens",
-     *     name="getAllRefreshTokensOfCurrentUser",
-     *     methods={"GET"}
-     * )
-     *
-     * @IsGranted("ROLE_USER")
-     *
-     * @return JsonResponse
-     *
-     * @throws Exception
-     */
-    public function getAllRefreshTokensOfCurrentUser(): JsonResponse
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        /** @var RefreshTokenRepository $refreshTokenRepository */
-        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
-        $refreshTokens = $refreshTokenRepository->findNotExpiredAndNotDeletedByUserId($user->getId());
-
-        return $this->json(['data' => compact('refreshTokens')]);
-    }
-
-    /**
-     * @Route(
-     *     "/refresh_tokens/{id}",
-     *     requirements={"id"="\d+"},
-     *     name="deleteRefreshTokenOfCurrentUserById",
-     *     methods={"DELETE"}
-     * )
-     *
-     * @IsGranted("ROLE_USER")
-     *
-     * @param int $id
-     *
-     * @return JsonResponse
-     *
-     * @throws NonUniqueResultException
-     */
-    public function deleteRefreshTokenOfCurrentUserById(int $id): JsonResponse
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        /** @var RefreshTokenRepository $refreshTokenRepository */
-        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
-        $refreshToken = $refreshTokenRepository->findOneNotExpiredAndNotDeletedByIdAndUserId($id, $user->getId());
-
-        if (!$refreshToken) {
-            return $this->json(['message' => 'Not found.'], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->remove($refreshToken);
-        $entityManager->flush();
-
-        return $this->json(['message' => 'Refresh token has been successfully removed.']);
-    }
-
-    /**
-     * @Route(
-     *     "/refresh_tokens",
-     *     name="deleteAllRefreshTokensOfCurrentUser",
-     *     methods={"DELETE"}
-     * )
-     *
-     * @IsGranted("ROLE_USER")
-     *
-     * @return JsonResponse
-     *
-     * @throws Exception
-     */
-    public function deleteAllRefreshTokensOfCurrentUser(): JsonResponse
-    {
-        /** @var User $user */
-        $user = $this->getUser();
-
-        /** @var RefreshTokenRepository $refreshTokenRepository */
-        $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
-        $refreshTokenRepository->softDeleteNotExpiredAndNotDeletedByUserId($user->getId());
-
-        return $this->json(['message' => 'Refresh tokens have been successfully removed.']);
-    }
-
-    /**
      * @Route("/refresh", name="refreshAccessToken", methods={"POST"})
      *
      * @param Request $request
@@ -292,69 +203,5 @@ class AuthController extends AbstractController
             'message' => sprintf('Access token for user %s has been successfully refreshed.', $user->getFullname()),
             'data' => ['access_token' => $accessToken]
         ]);
-    }
-
-    /**
-     * @Route("/reset_password", name="initiatePasswordReset", methods={"POST"})
-     *
-     * @param Request $request
-     * @param EmailService $emailService
-     *
-     * @return JsonResponse
-     *
-     * @throws NonUniqueResultException
-     * @throws Exception
-     */
-    public function initiatePasswordReset(Request $request, EmailService $emailService): JsonResponse
-    {
-        $emailAddress = $request->get('email');
-
-        if (!$emailAddress) {
-            return $this->json(['message' => 'Please provide an email.'], JsonResponse::HTTP_BAD_REQUEST);
-        }
-
-        /** @var EmailRepository $emailRepository */
-        $emailRepository = $this->getDoctrine()->getRepository(Email::class);
-        $email = $emailRepository->findVerifiedOneByEmailJoinedToUser($emailAddress);
-
-        if (!$email) {
-            return $this->json(
-                ['message' => sprintf("Email %s doesn't exist.", $emailAddress)],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
-        }
-
-        $user = $email->getUser();
-
-        if (!$user->isAppUser()) {
-            return $this->json(['message' => 'Forbidden.'], JsonResponse::HTTP_FORBIDDEN);
-        }
-
-        if ($user->getPasswordRecoveries()->count() > 0) {
-            return $this->json(
-                ['message' => 'Password recovery procedure has already been started.'],
-                JsonResponse::HTTP_FORBIDDEN
-            );
-        }
-
-        $passwordRecovery = new PasswordRecovery();
-        $passwordRecovery->setUser($user);
-        $passwordRecovery->setPrePersistDefaults();
-
-        try {
-            $emailService->sendPasswordRecoveryMessage($user, $passwordRecovery->getToken());
-        } catch (TransportExceptionInterface $exception) {
-            return $this->json(
-                ['message' => 'Unexpected error has been occurred, please try again later.'],
-                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($passwordRecovery);
-        $entityManager->flush();
-
-        return $this->json(['message' => 'Password recovery token has been successfully sent.']);
     }
 }
