@@ -27,7 +27,7 @@ class RefreshTokenController extends AbstractController
     /**
      * @Route("", name="getAllRefreshTokensOfCurrentUser", methods={"GET"})
      *
-     * @IsGranted("ROLE_USER")
+     * @IsGranted(User::ROLE_USER)
      *
      * @return JsonResponse
      *
@@ -53,7 +53,7 @@ class RefreshTokenController extends AbstractController
      *     methods={"DELETE"}
      * )
      *
-     * @IsGranted("ROLE_USER")
+     * @IsGranted(User::ROLE_USER)
      *
      * @param int $id
      * @param TranslatorInterface $translator
@@ -94,7 +94,7 @@ class RefreshTokenController extends AbstractController
     /**
      * @Route("", name="deleteAllRefreshTokensOfCurrentUser", methods={"DELETE"})
      *
-     * @IsGranted("ROLE_USER")
+     * @IsGranted(User::ROLE_USER)
      *
      * @param TranslatorInterface $translator
      *

@@ -18,6 +18,10 @@ class User implements UserInterface
 {
     use TimestampableEntity;
 
+    const ROLE_USER = 'ROLE_USER';
+    const ROLE_APP_USER = 'ROLE_APP_USER';
+    const ROLE_ADMIN = 'ROLE_ADMIN';
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -86,12 +90,12 @@ class User implements UserInterface
 
     public function isAdmin(): bool
     {
-        return in_array('ROLE_ADMIN', $this->getRoles());
+        return in_array(self::ROLE_ADMIN, $this->getRoles());
     }
 
     public function isAppUser(): bool
     {
-        return in_array('ROLE_APP_USER', $this->getRoles());
+        return in_array(self::ROLE_APP_USER, $this->getRoles());
     }
 
     public function getId(): ?int
@@ -135,7 +139,7 @@ class User implements UserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
+        $roles[] = self::ROLE_USER;
 
         return array_unique($roles);
     }

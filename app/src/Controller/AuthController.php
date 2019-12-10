@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Email;
 use App\Entity\RefreshToken;
+use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
 use App\Repository\RefreshTokenRepository;
@@ -34,7 +35,7 @@ class AuthController extends AbstractController
     /**
      * @Route("/", name="auth", methods={"GET"})
      *
-     * @IsGranted("ROLE_USER")
+     * @IsGranted(User::ROLE_USER)
      *
      * @return JsonResponse
      */
@@ -68,7 +69,7 @@ class AuthController extends AbstractController
     ): JsonResponse
     {
         $user = $userService->createUserFromRequest($request);
-        $user->setRoles(['ROLE_APP_USER']);
+        $user->setRoles([User::ROLE_APP_USER]);
         $validationService->validate($user);
         $userService->encodeUserPassword($user);
 

@@ -25,9 +25,9 @@ class GenerateKeysCommand extends Command
      */
     public function __construct(Filesystem $filesystem)
     {
-        $this->fileSystem = $filesystem;
-
         parent::__construct();
+
+        $this->fileSystem = $filesystem;
     }
 
     protected function configure()
