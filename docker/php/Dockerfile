@@ -1,7 +1,7 @@
 FROM php:7.2-apache
 
 RUN apt-get -y update && \
-    apt-get install -y git zip unzip libicu-dev
+    apt-get install -y git zip unzip libicu-dev libxslt-dev
 
 RUN cd "/usr/local/bin/" \
     docker-php-ext-install -j$(nproc) ctype \
@@ -19,6 +19,8 @@ RUN docker-php-ext-configure pdo_mysql --with-pdo-mysql=mysqlnd \
     && docker-php-ext-install pdo_mysql
 
 RUN docker-php-ext-configure intl && docker-php-ext-install intl
+
+RUN docker-php-ext-install xsl
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 

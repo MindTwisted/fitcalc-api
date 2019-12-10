@@ -50,7 +50,10 @@ class EmailService
             ->to($email->getEmail())
             ->subject('Email confirmation')
             ->htmlTemplate('emails/email_confirmation.html.twig')
-            ->context(compact('user', 'emailConfirmationUrl'));
+            ->context([
+                'fullname' => $user->getFullname(),
+                'emailConfirmationUrl' => $emailConfirmationUrl
+            ]);
 
         $this->mailer->send($sendEmail);
     }
@@ -70,7 +73,10 @@ class EmailService
             ->to($email->getEmail())
             ->subject('Password recovery')
             ->htmlTemplate('emails/password_recovery.html.twig')
-            ->context(compact('user', 'token'));
+            ->context([
+                'fullname' => $user->getFullname(),
+                'token' => $token
+            ]);
 
         $this->mailer->send($sendEmail);
     }

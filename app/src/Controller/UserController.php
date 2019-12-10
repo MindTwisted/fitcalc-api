@@ -18,13 +18,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class UserController
  *
  * @package App\Controller
  *
- * @Route("/api/users")
+ * @Route("/{_locale}/api/users", requirements={"_locale": "en|ru"})
  */
 class UserController extends AbstractController
 {
@@ -33,18 +34,26 @@ class UserController extends AbstractController
      *
      * @param Request $request
      * @param EmailService $emailService
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
      * @throws Exception
      */
-    public function initiatePasswordReset(Request $request, EmailService $emailService): JsonResponse
+    public function initiatePasswordReset(
+        Request $request,
+        EmailService $emailService,
+        TranslatorInterface $translator
+    ): JsonResponse
     {
         $emailAddress = $request->get('email');
 
         if (!$emailAddress) {
-            return $this->json(['message' => 'Please provide an email.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(
+                ['message' => $translator->trans('Please provide an email.')],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
         }
 
         /** @var EmailRepository $emailRepository */
@@ -53,7 +62,10 @@ class UserController extends AbstractController
 
         if (!$email) {
             return $this->json(
-                ['message' => sprintf("Email %s doesn't exist.", $emailAddress)],
+                ['message' => $translator->trans(
+                    "Email %email% doesn't exist.",
+                    ['%email%' => $emailAddress]
+                )],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
@@ -61,12 +73,15 @@ class UserController extends AbstractController
         $user = $email->getUser();
 
         if (!$user->isAppUser()) {
-            return $this->json(['message' => 'Forbidden.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Forbidden.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         if ($user->getPasswordRecoveries()->count() > 0) {
             return $this->json(
-                ['message' => 'Password recovery procedure has already been started.'],
+                ['message' => $translator->trans('Password recovery procedure has already been started.')],
                 JsonResponse::HTTP_FORBIDDEN
             );
         }
@@ -79,7 +94,7 @@ class UserController extends AbstractController
             $emailService->sendPasswordRecoveryMessage($user, $passwordRecovery->getToken());
         } catch (TransportExceptionInterface $exception) {
             return $this->json(
-                ['message' => 'Unexpected error has been occurred, please try again later.'],
+                ['message' => $translator->trans('Unexpected error has been occurred, please try again later.')],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -89,7 +104,7 @@ class UserController extends AbstractController
         $entityManager->persist($passwordRecovery);
         $entityManager->flush();
 
-        return $this->json(['message' => 'Password recovery token has been successfully sent.']);
+        return $this->json(['message' => $translator->trans('Password recovery token has been successfully sent.')]);
     }
 
     /**
@@ -99,6 +114,7 @@ class UserController extends AbstractController
      *
      * @param ValidationService $validationService
      * @param UserService $userService
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      * @throws NonUniqueResultException
@@ -107,13 +123,17 @@ class UserController extends AbstractController
     public function confirmPasswordReset(
         Request $request,
         ValidationService $validationService,
-        UserService $userService
+        UserService $userService,
+        TranslatorInterface $translator
     ): JsonResponse
     {
         $token = $request->get('token');
 
         if (!$token) {
-            return $this->json(['message' => 'Please provide a token.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(
+                ['message' => $translator->trans('Please provide a token.')],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
         }
 
         /** @var PasswordRecoveryRepository $passwordRecoveryRepository */
@@ -121,19 +141,28 @@ class UserController extends AbstractController
         $passwordRecovery = $passwordRecoveryRepository->findOneByTokenJoinedToUser($token);
 
         if (!$passwordRecovery) {
-            return $this->json(['message' => 'Token is invalid.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Token is invalid.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         $user = $passwordRecovery->getUser();
 
         if (!$user->isAppUser()) {
-            return $this->json(['message' => 'Forbidden.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Forbidden.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         $password = $request->get('password');
 
         if (!$password) {
-            return $this->json(['message' => 'Please provide a password.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(
+                ['message' => $translator->trans('Please provide a password.')],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
         }
 
         $user->setPassword($password);
@@ -147,6 +176,6 @@ class UserController extends AbstractController
         $entityManager->remove($passwordRecovery);
         $entityManager->flush();
 
-        return $this->json(['message' => 'Password has been successfully changed.']);
+        return $this->json(['message' => $translator->trans('Password has been successfully changed.')]);
     }
 }

@@ -20,13 +20,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class AuthController
  *
  * @package App\Controller
  *
- * @Route("/api/auth")
+ * @Route("/{_locale}/api/auth", requirements={"_locale": "en|ru"})
  */
 class AuthController extends AbstractController
 {
@@ -51,6 +52,7 @@ class AuthController extends AbstractController
      * @param UserService $userService
      * @param ValidationService $validationService
      * @param EmailService $emailService
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
@@ -61,7 +63,8 @@ class AuthController extends AbstractController
         Request $request,
         UserService $userService,
         ValidationService $validationService,
-        EmailService $emailService
+        EmailService $emailService,
+        TranslatorInterface $translator
     ): JsonResponse
     {
         $user = $userService->createUserFromRequest($request);
@@ -73,7 +76,7 @@ class AuthController extends AbstractController
             $emailService->sendEmailConfirmationMessage($request, $user);
         } catch (TransportExceptionInterface $exception) {
             return $this->json(
-                ['message' => 'Unexpected error has been occurred, please try again later.'],
+                ['message' => $translator->trans('Unexpected error has been occurred, please try again later.')],
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR
             );
         }
@@ -84,7 +87,10 @@ class AuthController extends AbstractController
         $entityManager->flush();
 
         return $this->json([
-            'message' => 'User has been registered. Please confirm your email address.',
+            'message' => $translator->trans(
+                'User %fullname% has been registered. Please confirm your email address.',
+                ['%fullname%' => $user->getFullname()]
+            ),
             'data' => compact('user')
         ]);
     }
@@ -93,19 +99,23 @@ class AuthController extends AbstractController
      * @Route("/register_email_confirmation/{hash}", name="registerEmailConfirmation", methods={"GET"})
      *
      * @param string $hash
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
      */
-    public function registerEmailConfirmation(string $hash): JsonResponse
+    public function registerEmailConfirmation(string $hash, TranslatorInterface $translator): JsonResponse
     {
         /** @var EmailRepository $emailRepository */
         $emailRepository = $this->getDoctrine()->getRepository(Email::class);
         $email = $emailRepository->findNotVerifiedOneByHash($hash);
 
         if (!$email) {
-            return $this->json(['message' => 'Forbidden.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Forbidden.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         $email->setVerified(true);
@@ -115,7 +125,14 @@ class AuthController extends AbstractController
         $entityManager->persist($email);
         $entityManager->flush();
 
-        return $this->json(['message' => sprintf('Email %s has been confirmed.', $email->getEmail())]);
+        return $this->json(
+            [
+                'message' => $translator->trans(
+                    'Email %email% has been confirmed.',
+                    ['%email%' => $email->getEmail()]
+                )
+            ]
+        );
     }
 
     /**
@@ -124,28 +141,37 @@ class AuthController extends AbstractController
      * @param Request $request
      * @param UserService $userService
      * @param AuthService $authService
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
+     * @throws ValidationException
      * @throws Exception
      */
     public function login(
         Request $request,
         UserService $userService,
-        AuthService $authService
+        AuthService $authService,
+        TranslatorInterface $translator
     ): JsonResponse
     {
         $user = $userService->getUserByUsernameOrEmail($request->get('username', ''), $request->get('email', ''));
 
         if (!$user) {
-            return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Invalid credentials.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         $isPasswordValid = $authService->isPasswordValid($user, $request->get('password'));
 
         if (!$isPasswordValid) {
-            return $this->json(['message' => 'Invalid credentials.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Invalid credentials.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         $accessToken = $authService->generateAccessToken($user);
@@ -157,7 +183,10 @@ class AuthController extends AbstractController
         );
 
         return $this->json([
-            'message' => sprintf('User %s has been successfully logged-in.', $user->getFullname()),
+            'message' => $translator->trans(
+                'User %fullname% has been successfully logged-in.',
+                ['%fullname%' => $user->getFullname()]
+            ),
             'data' => [
                 'access_token' => $accessToken,
                 'refresh_token' => [
@@ -174,18 +203,26 @@ class AuthController extends AbstractController
      *
      * @param Request $request
      * @param AuthService $authService
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
      * @throws Exception
      */
-    public function refreshAccessToken(Request $request, AuthService $authService): JsonResponse
+    public function refreshAccessToken(
+        Request $request,
+        AuthService $authService,
+        TranslatorInterface $translator
+    ): JsonResponse
     {
         $token = $request->get('refresh_token');
 
         if (!$token) {
-            return $this->json(['message' => 'Please provide a refresh token.'], JsonResponse::HTTP_BAD_REQUEST);
+            return $this->json(
+                ['message' => $translator->trans('Please provide a refresh token.')],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
         }
 
         /** @var RefreshTokenRepository $refreshTokenRepository */
@@ -193,14 +230,20 @@ class AuthController extends AbstractController
         $refreshToken = $refreshTokenRepository->findOneNotExpiredAndNotDeletedByTokenJoinedToUser($token);
 
         if (!$refreshToken) {
-            return $this->json(['message' => 'Refresh token is invalid.'], JsonResponse::HTTP_FORBIDDEN);
+            return $this->json(
+                ['message' => $translator->trans('Refresh token is invalid.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
         }
 
         $user = $refreshToken->getUser();
         $accessToken = $authService->generateAccessToken($user);
 
         return $this->json([
-            'message' => sprintf('Access token for user %s has been successfully refreshed.', $user->getFullname()),
+            'message' => $translator->trans(
+                'Access token for user %fullname% has been successfully refreshed.',
+                ['%fullname%' => $user->getFullname()]
+            ),
             'data' => ['access_token' => $accessToken]
         ]);
     }

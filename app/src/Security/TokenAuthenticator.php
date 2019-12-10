@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class TokenAuthenticator
@@ -23,14 +24,19 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     /** @var AuthService */
     private $authService;
 
+    /** @var TranslatorInterface */
+    private $translator;
+
     /**
      * TokenAuthenticator constructor.
      *
      * @param AuthService $authService
+     * @param TranslatorInterface $translator
      */
-    public function __construct(AuthService $authService)
+    public function __construct(AuthService $authService, TranslatorInterface $translator)
     {
         $this->authService = $authService;
+        $this->translator = $translator;
     }
 
     /**
@@ -59,7 +65,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         return new JsonResponse(
             [
-                'message' => 'Authentication required. Please provide access token.'
+                'message' => $this->translator->trans('Authentication required. Please provide access token.')
             ],
             JsonResponse::HTTP_UNAUTHORIZED
         );
@@ -167,7 +173,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     {
         return new JsonResponse(
             [
-                'message' => 'Authentication failed. Please repeat login procedure.'
+                'message' => $this->translator->trans('Authentication failed. Please repeat login procedure.')
             ],
             JsonResponse::HTTP_FORBIDDEN
         );

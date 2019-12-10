@@ -13,13 +13,14 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class RefreshTokenController
  *
  * @package App\Controller
  *
- * @Route("/api/refresh_tokens")
+ * @Route("/{_locale}/api/refresh_tokens", requirements={"_locale": "en|ru"})
  */
 class RefreshTokenController extends AbstractController
 {
@@ -55,12 +56,16 @@ class RefreshTokenController extends AbstractController
      * @IsGranted("ROLE_USER")
      *
      * @param int $id
+     * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
      */
-    public function deleteRefreshTokenOfCurrentUserById(int $id): JsonResponse
+    public function deleteRefreshTokenOfCurrentUserById(
+        int $id,
+        TranslatorInterface $translator
+    ): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -70,7 +75,10 @@ class RefreshTokenController extends AbstractController
         $refreshToken = $refreshTokenRepository->findOneNotExpiredAndNotDeletedByIdAndUserId($id, $user->getId());
 
         if (!$refreshToken) {
-            return $this->json(['message' => 'Not found.'], JsonResponse::HTTP_NOT_FOUND);
+            return $this->json(
+                ['message' => $translator->trans('Not found.')],
+                JsonResponse::HTTP_NOT_FOUND
+            );
         }
 
         /** @var EntityManagerInterface $entityManager */
@@ -78,7 +86,9 @@ class RefreshTokenController extends AbstractController
         $entityManager->remove($refreshToken);
         $entityManager->flush();
 
-        return $this->json(['message' => 'Refresh token has been successfully removed.']);
+        return $this->json([
+            'message' => $translator->trans('Refresh token has been successfully removed.')
+        ]);
     }
 
     /**
@@ -86,11 +96,13 @@ class RefreshTokenController extends AbstractController
      *
      * @IsGranted("ROLE_USER")
      *
+     * @param TranslatorInterface $translator
+     *
      * @return JsonResponse
      *
      * @throws Exception
      */
-    public function deleteAllRefreshTokensOfCurrentUser(): JsonResponse
+    public function deleteAllRefreshTokensOfCurrentUser(TranslatorInterface $translator): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -99,6 +111,8 @@ class RefreshTokenController extends AbstractController
         $refreshTokenRepository = $this->getDoctrine()->getRepository(RefreshToken::class);
         $refreshTokenRepository->softDeleteNotExpiredAndNotDeletedByUserId($user->getId());
 
-        return $this->json(['message' => 'Refresh tokens have been successfully removed.']);
+        return $this->json([
+            'message' => $translator->trans('Refresh tokens have been successfully removed.')
+        ]);
     }
 }
