@@ -4,15 +4,18 @@ namespace App\Controller;
 
 use App\Entity\Email;
 use App\Entity\PasswordRecovery;
+use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
 use App\Repository\PasswordRecoveryRepository;
+use App\Repository\UserRepository;
 use App\Services\EmailService;
 use App\Services\UserService;
 use App\Services\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -177,5 +180,25 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['message' => $translator->trans('Password has been successfully changed.')]);
+    }
+
+    /**
+     * @Route("", name="getAllUsers", methods={"GET"})
+     *
+     * @IsGranted(User::ROLE_ADMIN, message="Access denied.")
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function getAllUsers(Request $request): JsonResponse
+    {
+        $offset = $request->query->getInt('offset');
+
+        /** @var UserRepository $userRepository */
+        $userRepository = $this->getDoctrine()->getRepository(User::class);
+        $users = $userRepository->findAppUsersJoinedToVerifiedEmail($offset);
+
+        return $this->json(['data' => compact('users')]);
     }
 }

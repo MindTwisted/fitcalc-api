@@ -32,7 +32,7 @@ class UserFixtures extends BaseFixture
     {
         $this->createMany(
             User::class,
-            50,
+            150,
             $manager,
             function (User $user, int $i) {
                 $email = new Email();

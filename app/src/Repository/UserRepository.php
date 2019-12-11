@@ -114,4 +114,25 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @param int $offset
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function findAppUsersJoinedToVerifiedEmail(int $offset = 0, int $limit = 50): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere('u.roles LIKE :role')
+            ->setParameter('role', '%"' . User::ROLE_APP_USER . '"%')
+            ->join('u.emails', 'e')
+            ->andWhere('e.verified = 1')
+            ->addSelect('e')
+            ->orderBy('u.id', 'ASC')
+            ->setFirstResult( $offset )
+            ->setMaxResults( $limit )
+            ->getQuery()
+            ->getResult();
+    }
 }
