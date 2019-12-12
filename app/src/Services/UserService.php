@@ -135,7 +135,7 @@ class UserService
         $user = new User();
         $user->setFullname($request->get('fullname', ''));
         $user->setUsername($request->get('username', ''));
-        $user->setPassword($request->get('password', ''));
+        $user->setPlainPassword($request->get('password', ''));
         $email = new Email();
         $email->setEmail($request->get('email', ''));
         $email->setPrePersistDefaults();
@@ -151,7 +151,7 @@ class UserService
      */
     public function encodeUserPassword(User $user): User
     {
-        $user->setPassword($this->userPasswordEncoder->encodePassword($user, $user->getPassword()));
+        $user->setPassword($this->userPasswordEncoder->encodePassword($user, $user->getPlainPassword()));
 
         return $user;
     }

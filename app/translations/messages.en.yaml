@@ -26,3 +26,4 @@ Forbidden.: Forbidden.
 'Authentication required. Please provide access token.': 'Authentication required. Please provide access token.'
 'Authentication failed. Please repeat login procedure.': 'Authentication failed. Please repeat login procedure.'
 'Invalid data have been provided.': 'Invalid data have been provided.'
+'User %fullname% has been successfully updated.': 'User %fullname% has been successfully updated.'

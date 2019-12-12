@@ -168,7 +168,7 @@ class UserController extends AbstractController
             );
         }
 
-        $user->setPassword($password);
+        $user->setPlainPassword($password);
 
         $validationService->validate($user);
         $userService->encodeUserPassword($user);
@@ -200,5 +200,49 @@ class UserController extends AbstractController
         $users = $userRepository->findAppUsersJoinedToVerifiedEmail($offset);
 
         return $this->json(['data' => compact('users')]);
+    }
+
+    /**
+     * @Route("", name="updateCurrentUser", methods={"PUT"})
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param UserService $userService
+     * @param ValidationService $validationService
+     *
+     * @return JsonResponse
+     *
+     * @throws ValidationException
+     */
+    public function updateCurrentUser(
+        Request $request,
+        TranslatorInterface $translator,
+        UserService $userService,
+        ValidationService $validationService
+    ): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $user->setFullname($request->get('fullname', ''));
+        $user->setUsername($request->get('username', ''));
+        $user->setPlainPassword($request->get('password', ''));
+
+        $validationService->validate($user);
+        $userService->encodeUserPassword($user);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $this->json([
+            'message' => $translator->trans(
+                'User %fullname% has been successfully updated.',
+                ['%fullname%' => $user->getFullname()]
+            ),
+            'data' => compact('user')
+        ]);
     }
 }

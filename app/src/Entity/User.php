@@ -50,9 +50,7 @@ class User implements UserInterface
     private $roles = [];
 
     /**
-     * @var string The hashed password
-     *
-     * @ORM\Column(type="string")
+     * @var string
      *
      * @Assert\NotBlank()
      * @Assert\Length(min="8")
@@ -60,6 +58,13 @@ class User implements UserInterface
      *     pattern="/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/",
      *     message="Password should contains minimum eight characters, at least one letter, one number and one special character."
      * )
+     */
+    private $plainPassword;
+
+    /**
+     * @var string The hashed password
+     *
+     * @ORM\Column(type="string")
      */
     private $password;
 
@@ -149,6 +154,22 @@ class User implements UserInterface
         $this->roles = $roles;
 
         return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPlainPassword(): string
+    {
+        return $this->plainPassword;
+    }
+
+    /**
+     * @param string $plainPassword
+     */
+    public function setPlainPassword(string $plainPassword): void
+    {
+        $this->plainPassword = $plainPassword;
     }
 
     /**
