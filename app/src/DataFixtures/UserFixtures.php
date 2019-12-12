@@ -42,7 +42,7 @@ class UserFixtures extends BaseFixture
                 $user->setFullname($this->faker->name);
                 $user->setRoles([User::ROLE_APP_USER]);
                 $user->setUsername($this->faker->uuid);
-                $user->setPassword($this->faker->word);
+                $user->setPlainPassword($this->faker->word);
                 $user->addEmail($email);
 
                 $this->userService->encodeUserPassword($user);

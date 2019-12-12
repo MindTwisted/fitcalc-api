@@ -79,7 +79,7 @@ class AdminCreateCommand extends Command
         $user = new User();
         $user->setFullname('Admin');
         $user->setUsername($input->getArgument('username'));
-        $user->setPassword($input->getArgument('password'));
+        $user->setPlainPassword($input->getArgument('password'));
         $user->setRoles([User::ROLE_ADMIN]);
 
         $email = new Email();

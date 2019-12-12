@@ -3,7 +3,6 @@
 namespace App\Services;
 
 
-use App\Entity\PasswordRecovery;
 use App\Entity\User;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\HttpFoundation\Request;

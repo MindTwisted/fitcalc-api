@@ -193,11 +193,14 @@ class UserController extends AbstractController
      */
     public function getAllUsers(Request $request): JsonResponse
     {
-        $offset = $request->query->getInt('offset');
-
         /** @var UserRepository $userRepository */
         $userRepository = $this->getDoctrine()->getRepository(User::class);
-        $users = $userRepository->findAppUsersJoinedToVerifiedEmail($offset);
+        $users = $userRepository->findAppUsersJoinedToVerifiedEmail(
+            $request->query->get('fullname', ''),
+            $request->query->get('username', ''),
+            $request->query->get('email', ''),
+            $request->query->getInt('offset', 0)
+        );
 
         return $this->json(['data' => compact('users')]);
     }
