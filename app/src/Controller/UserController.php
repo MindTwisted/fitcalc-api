@@ -9,6 +9,7 @@ use App\Exception\ValidationException;
 use App\Repository\EmailRepository;
 use App\Repository\PasswordRecoveryRepository;
 use App\Repository\UserRepository;
+use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Services\UserService;
 use App\Services\ValidationService;
@@ -213,6 +214,7 @@ class UserController extends AbstractController
      * @param Request $request
      * @param TranslatorInterface $translator
      * @param UserService $userService
+     * @param AuthService $authService
      * @param ValidationService $validationService
      *
      * @return JsonResponse
@@ -223,11 +225,20 @@ class UserController extends AbstractController
         Request $request,
         TranslatorInterface $translator,
         UserService $userService,
+        AuthService $authService,
         ValidationService $validationService
     ): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
+
+        if (!$authService->isPasswordValid($user, $request->get('old_password'))) {
+            return $this->json(
+                ['message' => $translator->trans('Old password is invalid.')],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
+        }
+
         $user->setFullname($request->get('fullname', ''));
         $user->setUsername($request->get('username', ''));
         $user->setPlainPassword($request->get('password', ''));

@@ -27,3 +27,4 @@ Forbidden.: Forbidden.
 'Authentication failed. Please repeat login procedure.': 'Authentication failed. Please repeat login procedure.'
 'Invalid data have been provided.': 'Invalid data have been provided.'
 'User %fullname% has been successfully updated.': 'User %fullname% has been successfully updated.'
+'Old password is invalid.': 'Old password is invalid.'
