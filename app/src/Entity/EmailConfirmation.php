@@ -9,12 +9,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\EmailRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\EmailConfirmationRepository")
  * @ORM\HasLifecycleCallbacks()
  * @UniqueEntity("email")
  * @UniqueEntity("hash")
  */
-class Email
+class EmailConfirmation
 {
     use TimestampableEntity;
 
@@ -45,36 +45,38 @@ class Email
     private $hash;
 
     /**
-     * @ORM\Column(type="boolean")
-     */
-    private $verified;
-
-    /**
      * @ORM\PrePersist()
      *
      * @throws Exception
      */
     public function setPrePersistDefaults()
     {
-        if ($this->verified === null) {
-            $this->verified = false;
-        }
-
         if ($this->hash === null) {
             $this->hash = md5(random_bytes(10));
         }
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return User|null
+     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
+    /**
+     * @param User|null $user
+     *
+     * @return $this
+     */
     public function setUser(?User $user): self
     {
         $this->user = $user;
@@ -82,11 +84,19 @@ class Email
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
+    /**
+     * @param string $email
+     *
+     * @return $this
+     */
     public function setEmail(string $email): self
     {
         $this->email = $email;
@@ -94,26 +104,22 @@ class Email
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getHash(): ?string
     {
         return $this->hash;
     }
 
+    /**
+     * @param string $hash
+     *
+     * @return $this
+     */
     public function setHash(string $hash): self
     {
         $this->hash = $hash;
-
-        return $this;
-    }
-
-    public function getVerified(): ?bool
-    {
-        return $this->verified;
-    }
-
-    public function setVerified(bool $verified): self
-    {
-        $this->verified = $verified;
 
         return $this;
     }

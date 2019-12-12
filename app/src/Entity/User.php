@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -12,8 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
- * @ORM\Table(indexes={@ORM\Index(name="user_fullname_search_index", columns={"fullname"})})
- * @UniqueEntity("username")
+ * @UniqueEntity("email")
  */
 class User implements UserInterface
 {
@@ -35,15 +35,20 @@ class User implements UserInterface
      *
      * @Assert\NotBlank()
      */
-    private $fullname;
+    private $name;
 
     /**
-     * @ORM\Column(type="string", length=180, unique=true)
+     * @ORM\Column(type="string", length=255, unique=true)
      *
      * @Assert\NotBlank()
-     * @Assert\Length(min="8")
+     * @Assert\Email()
      */
-    private $username;
+    private $email;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    private $emailConfirmedAt;
 
     /**
      * @ORM\Column(type="json")
@@ -75,50 +80,47 @@ class User implements UserInterface
     private $refreshTokens;
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Email", mappedBy="user", orphanRemoval=true, cascade={"persist"})
-     *
-     * @Assert\Valid()
-     * @Assert\Count(min="1")
+     * @ORM\OneToMany(targetEntity="App\Entity\EmailConfirmation", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
-    private $emails;
+    private $emailConfirmations;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\PasswordRecovery", mappedBy="user", orphanRemoval=true)
      */
     private $passwordRecoveries;
 
+    /**
+     * User constructor.
+     */
     public function __construct()
     {
         $this->refreshTokens = new ArrayCollection();
-        $this->emails = new ArrayCollection();
+        $this->emailConfirmations = new ArrayCollection();
         $this->passwordRecoveries = new ArrayCollection();
     }
 
+    /**
+     * @return bool
+     */
     public function isAdmin(): bool
     {
         return in_array(self::ROLE_ADMIN, $this->getRoles());
     }
 
+    /**
+     * @return bool
+     */
     public function isAppUser(): bool
     {
         return in_array(self::ROLE_APP_USER, $this->getRoles());
     }
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getFullname(): string
-    {
-        return (string) $this->fullname;
-    }
-
-    public function setFullname(string $fullname): self
-    {
-        $this->fullname = $fullname;
-
-        return $this;
     }
 
     /**
@@ -126,14 +128,67 @@ class User implements UserInterface
      *
      * @see UserInterface
      */
-    public function getUsername(): string
+    public function getUsername()
     {
-        return (string) $this->username;
+        return $this->getEmail();
     }
 
-    public function setUsername(string $username): self
+    /**
+     * @return string
+     */
+    public function getName(): string
     {
-        $this->username = $username;
+        return (string) $this->name;
+    }
+
+    /**
+     * @param string $name
+     *
+     * @return User
+     */
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @param string $email
+     *
+     * @return $this
+     */
+    public function setEmail(string $email): self
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    /**
+     * @return DateTimeInterface
+     */
+    public function getEmailConfirmedAt(): ?DateTimeInterface
+    {
+        return $this->emailConfirmedAt;
+    }
+
+    /**
+     * @param DateTimeInterface $emailConfirmedAt
+     *
+     * @return User
+     */
+    public function setEmailConfirmedAt(DateTimeInterface $emailConfirmedAt): self
+    {
+        $this->emailConfirmedAt = $emailConfirmedAt;
 
         return $this;
     }
@@ -150,6 +205,11 @@ class User implements UserInterface
         return array_unique($roles);
     }
 
+    /**
+     * @param array $roles
+     *
+     * @return $this
+     */
     public function setRoles(array $roles): self
     {
         $this->roles = $roles;
@@ -181,6 +241,11 @@ class User implements UserInterface
         return (string) $this->password;
     }
 
+    /**
+     * @param string $password
+     *
+     * @return $this
+     */
     public function setPassword(string $password): self
     {
         $this->password = $password;
@@ -213,6 +278,11 @@ class User implements UserInterface
         return $this->refreshTokens;
     }
 
+    /**
+     * @param RefreshToken $refreshToken
+     *
+     * @return $this
+     */
     public function addRefreshToken(RefreshToken $refreshToken): self
     {
         if (!$this->refreshTokens->contains($refreshToken)) {
@@ -223,6 +293,11 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * @param RefreshToken $refreshToken
+     *
+     * @return $this
+     */
     public function removeRefreshToken(RefreshToken $refreshToken): self
     {
         if ($this->refreshTokens->contains($refreshToken)) {
@@ -237,27 +312,37 @@ class User implements UserInterface
     }
 
     /**
-     * @return Collection|Email[]
+     * @return Collection|EmailConfirmation[]
      */
-    public function getEmails(): Collection
+    public function getEmailConfirmations(): Collection
     {
-        return $this->emails;
+        return $this->emailConfirmations;
     }
 
-    public function addEmail(Email $email): self
+    /**
+     * @param EmailConfirmation $emailConfirmation
+     *
+     * @return $this
+     */
+    public function addEmailConfirmation(EmailConfirmation $emailConfirmation): self
     {
-        if (!$this->emails->contains($email)) {
-            $this->emails[] = $email;
-            $email->setUser($this);
+        if (!$this->emailConfirmations->contains($emailConfirmation)) {
+            $this->emailConfirmations[] = $emailConfirmation;
+            $emailConfirmation->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeEmail(Email $email): self
+    /**
+     * @param EmailConfirmation $email
+     *
+     * @return $this
+     */
+    public function removeEmail(EmailConfirmation $email): self
     {
-        if ($this->emails->contains($email)) {
-            $this->emails->removeElement($email);
+        if ($this->emailConfirmations->contains($email)) {
+            $this->emailConfirmations->removeElement($email);
             // set the owning side to null (unless already changed)
             if ($email->getUser() === $this) {
                 $email->setUser(null);
@@ -275,6 +360,11 @@ class User implements UserInterface
         return $this->passwordRecoveries;
     }
 
+    /**
+     * @param PasswordRecovery $passwordRecovery
+     *
+     * @return $this
+     */
     public function addPasswordRecovery(PasswordRecovery $passwordRecovery): self
     {
         if (!$this->passwordRecoveries->contains($passwordRecovery)) {
@@ -285,6 +375,11 @@ class User implements UserInterface
         return $this;
     }
 
+    /**
+     * @param PasswordRecovery $passwordRecovery
+     *
+     * @return $this
+     */
     public function removePasswordRecovery(PasswordRecovery $passwordRecovery): self
     {
         if ($this->passwordRecoveries->contains($passwordRecovery)) {

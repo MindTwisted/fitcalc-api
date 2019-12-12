@@ -2,16 +2,13 @@
 
 namespace App\Controller;
 
-use App\Entity\Email;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Exception\ValidationException;
-use App\Repository\EmailRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Services\UserService;
-use App\Services\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
@@ -51,27 +48,23 @@ class AuthController extends AbstractController
      *
      * @param Request $request
      * @param UserService $userService
-     * @param ValidationService $validationService
      * @param EmailService $emailService
      * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
-     * @throws ValidationException
      * @throws Exception
      */
     public function register(
         Request $request,
         UserService $userService,
-        ValidationService $validationService,
         EmailService $emailService,
         TranslatorInterface $translator
     ): JsonResponse
     {
-        $user = $userService->createUserFromRequest($request);
-        $user->setRoles([User::ROLE_APP_USER]);
-        $validationService->validate($user);
-        $userService->encodeUserPassword($user);
+        $user = $userService->createUserForRegistration($request);
+
+        dd($user);
 
         try {
             $emailService->sendEmailConfirmationMessage($request, $user);

@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use DateTimeInterface;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
@@ -54,16 +55,27 @@ class RefreshToken
      */
     private $expiresAt;
 
+    /**
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * @return User|null
+     */
     public function getUser(): ?User
     {
         return $this->user;
     }
 
+    /**
+     * @param User|null $user
+     *
+     * @return $this
+     */
     public function setUser(?User $user): self
     {
         $this->user = $user;
@@ -71,11 +83,19 @@ class RefreshToken
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getToken(): ?string
     {
         return $this->token;
     }
 
+    /**
+     * @param string $token
+     *
+     * @return $this
+     */
     public function setToken(string $token): self
     {
         $this->token = $token;
@@ -83,11 +103,19 @@ class RefreshToken
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getDevice(): ?string
     {
         return $this->device;
     }
 
+    /**
+     * @param string $device
+     *
+     * @return $this
+     */
     public function setDevice(string $device): self
     {
         $this->device = $device;
@@ -95,11 +123,19 @@ class RefreshToken
         return $this;
     }
 
+    /**
+     * @return string|null
+     */
     public function getIpAddress(): ?string
     {
         return $this->ipAddress;
     }
 
+    /**
+     * @param string $ipAddress
+     *
+     * @return $this
+     */
     public function setIpAddress(string $ipAddress): self
     {
         $this->ipAddress = $ipAddress;
@@ -107,12 +143,20 @@ class RefreshToken
         return $this;
     }
 
-    public function getExpiresAt(): ?\DateTimeInterface
+    /**
+     * @return DateTimeInterface|null
+     */
+    public function getExpiresAt(): ?DateTimeInterface
     {
         return $this->expiresAt;
     }
 
-    public function setExpiresAt(\DateTimeInterface $expiresAt): self
+    /**
+     * @param DateTimeInterface $expiresAt
+     *
+     * @return $this
+     */
+    public function setExpiresAt(DateTimeInterface $expiresAt): self
     {
         $this->expiresAt = $expiresAt;
 

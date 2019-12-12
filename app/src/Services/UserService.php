@@ -3,7 +3,7 @@
 namespace App\Services;
 
 
-use App\Entity\Email;
+use App\Entity\EmailConfirmation;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Exception\ValidationException;
@@ -124,27 +124,6 @@ class UserService
     }
 
     /**
-     * @param Request $request
-     *
-     * @return User
-     *
-     * @throws Exception
-     */
-    public function createUserFromRequest(Request $request): User
-    {
-        $user = new User();
-        $user->setFullname($request->get('fullname', ''));
-        $user->setUsername($request->get('username', ''));
-        $user->setPlainPassword($request->get('password', ''));
-        $email = new Email();
-        $email->setEmail($request->get('email', ''));
-        $email->setPrePersistDefaults();
-        $user->addEmail($email);
-
-        return $user;
-    }
-
-    /**
      * @param User $user
      *
      * @return User
@@ -152,6 +131,32 @@ class UserService
     public function encodeUserPassword(User $user): User
     {
         $user->setPassword($this->userPasswordEncoder->encodePassword($user, $user->getPlainPassword()));
+
+        return $user;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return User
+     *
+     * @throws ValidationException
+     * @throws Exception
+     */
+    public function createUserForRegistration(Request $request): User
+    {
+        $user = new User();
+        $user->setName($request->get('name', ''));
+        $user->setEmail($request->get('email', ''));
+        $user->setPlainPassword($request->get('plainPassword', ''));
+        $user->setRoles([User::ROLE_APP_USER]);
+        $emailConfirmation = new EmailConfirmation();
+        $emailConfirmation->setEmail($request->get('email', ''));
+        $emailConfirmation->setPrePersistDefaults();
+        $user->addEmailConfirmation($emailConfirmation);
+
+        $this->validationService->validate($user);
+        $this->encodeUserPassword($user);
 
         return $user;
     }

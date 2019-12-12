@@ -38,7 +38,10 @@ class EmailService
      */
     public function sendEmailConfirmationMessage(Request $request, User $user): void
     {
-        $email = $user->getEmails()[0];
+        $emailConfirmation = $user->getEmailConfirmations()->first();
+
+        dd('stop');
+
         $protocol = $request->isSecure() ? 'https://' : 'http://';
         $domain = $_ENV['APP_DOMAIN'];
         $url = $this->router->generate('registerEmailConfirmation', ['hash' => $email->getHash()]);
