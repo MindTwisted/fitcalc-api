@@ -15,7 +15,9 @@ use Faker\Generator;
  */
 abstract class BaseFixture extends Fixture
 {
-    /** @var Generator */
+    /**
+     * @var Generator
+     */
     protected $faker;
 
     /**

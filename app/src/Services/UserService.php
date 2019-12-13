@@ -20,13 +20,19 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class UserService
 {
-    /** @var EntityManagerInterface */
+    /**
+     * @var EntityManagerInterface
+     */
     private $entityManager;
 
-    /** @var UserPasswordEncoderInterface */
+    /**
+     * @var UserPasswordEncoderInterface
+     */
     private $userPasswordEncoder;
 
-    /** @var ValidationService */
+    /**
+     * @var ValidationService
+     */
     private $validationService;
 
     /**
@@ -48,27 +54,18 @@ class UserService
     }
 
     /**
-     * @param string $username
      * @param string $email
      *
      * @return User|null
      *
      * @throws NonUniqueResultException
      */
-    public function getUserByUsernameOrEmail(string $username, string $email): ?User
+    public function getUserByEmail(string $email): ?User
     {
         /** @var UserRepository $userRepository */
         $userRepository = $this->entityManager->getRepository(User::class);
 
-        if ($username) {
-            return $userRepository->findOneByUsernameJoinedToVerifiedEmail($username);
-        }
-
-        if ($email) {
-            return $userRepository->findOneByVerifiedEmail($email);
-        }
-
-        return null;
+        return $userRepository->findOneByConfirmedEmail($email);
     }
 
     /**
@@ -83,7 +80,7 @@ class UserService
         /** @var UserRepository $userRepository */
         $userRepository = $this->entityManager->getRepository(User::class);
 
-        return $userRepository->findOneByIdJoinedToVerifiedEmail($id);
+        return $userRepository->findOneWithConfirmedEmailById($id);
     }
 
     /**

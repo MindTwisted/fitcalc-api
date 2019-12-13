@@ -16,10 +16,14 @@ use Throwable;
 
 class JwtService
 {
-    /** @var string */
+    /**
+     * @var string
+     */
     private $privateKeyPath;
 
-    /** @var string */
+    /**
+     * @var string
+     */
     private $publicKeyPath;
 
     /**

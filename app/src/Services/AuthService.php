@@ -14,13 +14,19 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class AuthService
 {
-    /** @var UserPasswordEncoderInterface */
+    /**
+     * @var UserPasswordEncoderInterface
+     */
     private $userPasswordEncoder;
 
-    /** @var UserService */
+    /**
+     * @var UserService
+     */
     private $userService;
 
-    /** @var JwtService */
+    /**
+     * @var JwtService
+     */
     private $jwtService;
 
     /**

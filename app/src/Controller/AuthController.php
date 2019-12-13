@@ -2,13 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\EmailConfirmation;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Exception\ValidationException;
+use App\Repository\EmailConfirmationRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Services\AuthService;
 use App\Services\EmailService;
 use App\Services\UserService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
@@ -64,8 +67,6 @@ class AuthController extends AbstractController
     {
         $user = $userService->createUserForRegistration($request);
 
-        dd($user);
-
         try {
             $emailService->sendEmailConfirmationMessage($request, $user);
         } catch (TransportExceptionInterface $exception) {
@@ -82,15 +83,15 @@ class AuthController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans(
-                'User %fullname% has been registered. Please confirm your email address.',
-                ['%fullname%' => $user->getFullname()]
+                'User %name% has been registered. Please confirm your email address.',
+                ['%name%' => $user->getName()]
             ),
             'data' => compact('user')
         ]);
     }
 
     /**
-     * @Route("/register_email_confirmation/{hash}", name="registerEmailConfirmation", methods={"GET"})
+     * @Route("/email_confirmation/{hash}", name="emailConfirmation", methods={"GET"})
      *
      * @param string $hash
      * @param TranslatorInterface $translator
@@ -99,31 +100,34 @@ class AuthController extends AbstractController
      *
      * @throws NonUniqueResultException
      */
-    public function registerEmailConfirmation(string $hash, TranslatorInterface $translator): JsonResponse
+    public function emailConfirmation(string $hash, TranslatorInterface $translator): JsonResponse
     {
-        /** @var EmailRepository $emailRepository */
-        $emailRepository = $this->getDoctrine()->getRepository(Email::class);
-        $email = $emailRepository->findNotVerifiedOneByHash($hash);
+        /** @var EmailConfirmationRepository $emailConfirmationRepository */
+        $emailConfirmationRepository = $this->getDoctrine()->getRepository(EmailConfirmation::class);
+        $emailConfirmation = $emailConfirmationRepository->findOneByHashJoinedToUser($hash);
 
-        if (!$email) {
+        if (!$emailConfirmation) {
             return $this->json(
                 ['message' => $translator->trans('Forbidden.')],
                 JsonResponse::HTTP_FORBIDDEN
             );
         }
 
-        $email->setVerified(true);
+        $user = $emailConfirmation->getUser();
+        $user->setEmail($emailConfirmation->getEmail());
+        $user->setEmailConfirmedAt(new DateTime());
 
         /** @var EntityManagerInterface $entityManager */
         $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($email);
+        $entityManager->persist($user);
+        $entityManager->remove($emailConfirmation);
         $entityManager->flush();
 
         return $this->json(
             [
                 'message' => $translator->trans(
                     'Email %email% has been confirmed.',
-                    ['%email%' => $email->getEmail()]
+                    ['%email%' => $user->getEmail()]
                 )
             ]
         );
@@ -150,7 +154,7 @@ class AuthController extends AbstractController
         TranslatorInterface $translator
     ): JsonResponse
     {
-        $user = $userService->getUserByUsernameOrEmail($request->get('username', ''), $request->get('email', ''));
+        $user = $userService->getUserByEmail($request->get('email', ''));
 
         if (!$user) {
             return $this->json(
@@ -178,8 +182,8 @@ class AuthController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans(
-                'User %fullname% has been successfully logged-in.',
-                ['%fullname%' => $user->getFullname()]
+                'User %name% has been successfully logged-in.',
+                ['%name%' => $user->getName()]
             ),
             'data' => [
                 'access_token' => $accessToken,
@@ -235,8 +239,8 @@ class AuthController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans(
-                'Access token for user %fullname% has been successfully refreshed.',
-                ['%fullname%' => $user->getFullname()]
+                'Access token for user %name% has been successfully refreshed.',
+                ['%name%' => $user->getName()]
             ),
             'data' => ['access_token' => $accessToken]
         ]);

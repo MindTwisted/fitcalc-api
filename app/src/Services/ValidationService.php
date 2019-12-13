@@ -9,10 +9,14 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ValidationService
 {
-    /** @var ValidatorInterface */
+    /**
+     * @var ValidatorInterface
+     */
     private $validator;
 
-    /** @var TranslatorInterface */
+    /**
+     * @var TranslatorInterface
+     */
     private $translator;
 
     /**

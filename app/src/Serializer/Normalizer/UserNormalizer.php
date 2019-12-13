@@ -23,9 +23,8 @@ class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInte
     {
         $data = [
             'id' => $object->getId(),
-            'fullname' => $object->getFullname(),
-            'username' => $object->getUsername(),
-            'email' => $object->getEmails()[0]->getEmail(),
+            'name' => $object->getName(),
+            'email' => $object->getEmail(),
             'roles' => $object->getRoles()
         ];
 

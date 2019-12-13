@@ -26,7 +26,7 @@ class EmailConfirmation
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="emails")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="emailConfirmations")
      * @ORM\JoinColumn(nullable=false)
      */
     private $user;

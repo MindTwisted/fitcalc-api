@@ -2,11 +2,9 @@
 
 namespace App\Controller;
 
-use App\Entity\Email;
 use App\Entity\PasswordRecovery;
 use App\Entity\User;
 use App\Exception\ValidationException;
-use App\Repository\EmailRepository;
 use App\Repository\PasswordRecoveryRepository;
 use App\Repository\UserRepository;
 use App\Services\AuthService;
@@ -37,6 +35,7 @@ class UserController extends AbstractController
      * @Route("/initiate_password_reset", name="initiatePasswordReset", methods={"POST"})
      *
      * @param Request $request
+     * @param UserService $userService
      * @param EmailService $emailService
      * @param TranslatorInterface $translator
      *
@@ -47,34 +46,31 @@ class UserController extends AbstractController
      */
     public function initiatePasswordReset(
         Request $request,
+        UserService $userService,
         EmailService $emailService,
         TranslatorInterface $translator
     ): JsonResponse
     {
-        $emailAddress = $request->get('email');
+        $email = $request->get('email');
 
-        if (!$emailAddress) {
+        if (!$email) {
             return $this->json(
                 ['message' => $translator->trans('Please provide an email.')],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
 
-        /** @var EmailRepository $emailRepository */
-        $emailRepository = $this->getDoctrine()->getRepository(Email::class);
-        $email = $emailRepository->findVerifiedOneByEmailJoinedToUser($emailAddress);
+        $user = $userService->getUserByEmail($email);
 
-        if (!$email) {
+        if (!$user) {
             return $this->json(
                 ['message' => $translator->trans(
                     "Email %email% doesn't exist.",
-                    ['%email%' => $emailAddress]
+                    ['%email%' => $email]
                 )],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
-
-        $user = $email->getUser();
 
         if (!$user->isAppUser()) {
             return $this->json(
@@ -196,9 +192,8 @@ class UserController extends AbstractController
     {
         /** @var UserRepository $userRepository */
         $userRepository = $this->getDoctrine()->getRepository(User::class);
-        $users = $userRepository->findAppUsersJoinedToVerifiedEmail(
-            $request->query->get('fullname', ''),
-            $request->query->get('username', ''),
+        $users = $userRepository->findAppUsersWithConfirmedEmail(
+            $request->query->get('name', ''),
             $request->query->get('email', ''),
             $request->query->getInt('offset', 0)
         );
@@ -239,9 +234,8 @@ class UserController extends AbstractController
             );
         }
 
-        $user->setFullname($request->get('fullname', ''));
-        $user->setUsername($request->get('username', ''));
-        $user->setPlainPassword($request->get('password', ''));
+        $user->setName($request->get('name', ''));
+        $user->setPlainPassword($request->get('plainPassword', ''));
 
         $validationService->validate($user);
         $userService->encodeUserPassword($user);
@@ -253,8 +247,8 @@ class UserController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans(
-                'User %fullname% has been successfully updated.',
-                ['%fullname%' => $user->getFullname()]
+                'User %name% has been successfully updated.',
+                ['%name%' => $user->getName()]
             ),
             'data' => compact('user')
         ]);

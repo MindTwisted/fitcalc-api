@@ -27,61 +27,14 @@ class EmailConfirmationRepository extends ServiceEntityRepository
      *
      * @throws NonUniqueResultException
      */
-    // public function findNotVerifiedOneByHash(string $hash): ?Email
-    // {
-    //     return $this->createQueryBuilder('e')
-    //         ->andWhere('e.hash = :hash')
-    //         ->setParameter('hash', $hash)
-    //         ->andWhere('e.verified = 0')
-    //         ->getQuery()
-    //         ->getOneOrNullResult();
-    // }
-
-    /**
-     * @param string $email
-     *
-     * @return EmailConfirmation|null
-     *
-     * @throws NonUniqueResultException
-     */
-    // public function findVerifiedOneByEmailJoinedToUser(string $email): ?Email
-    // {
-    //     return $this->createQueryBuilder('e')
-    //         ->andWhere('e.email = :email')
-    //         ->setParameter('email', $email)
-    //         ->andWhere('e.verified = 1')
-    //         ->join('e.user', 'u')
-    //         ->addSelect('u')
-    //         ->getQuery()
-    //         ->getOneOrNullResult();
-    // }
-
-    // /**
-    //  * @return Email[] Returns an array of Email objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    public function findOneByHashJoinedToUser(string $hash): ?EmailConfirmation
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('e.hash = :hash')
+            ->setParameter('hash', $hash)
+            ->join('e.user', 'u')
+            ->addSelect('u')
             ->getQuery()
-            ->getResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?Email
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

@@ -3,14 +3,16 @@
 namespace App\DataFixtures;
 
 
-use App\Entity\Email;
 use App\Entity\User;
 use App\Services\UserService;
+use DateTime;
 use Doctrine\Common\Persistence\ObjectManager;
 
 class UserFixtures extends BaseFixture
 {
-    /** @var UserService */
+    /**
+     * @var UserService
+     */
     private $userService;
 
     /**
@@ -35,15 +37,11 @@ class UserFixtures extends BaseFixture
             150,
             $manager,
             function (User $user, int $i) {
-                $email = new Email();
-                $email->setEmail($this->faker->unique()->email);
-                $email->setVerified(true);
-
-                $user->setFullname($this->faker->name);
+                $user->setName($this->faker->name);
+                $user->setEmail($this->faker->unique()->email);
+                $user->setEmailConfirmedAt(new DateTime());
                 $user->setRoles([User::ROLE_APP_USER]);
-                $user->setUsername($this->faker->uuid);
                 $user->setPlainPassword($this->faker->word);
-                $user->addEmail($email);
 
                 $this->userService->encodeUserPassword($user);
             }

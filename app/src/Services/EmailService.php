@@ -12,10 +12,14 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class EmailService
 {
-    /** @var MailerInterface */
+    /**
+     * @var MailerInterface
+     */
     private $mailer;
 
-    /** @var UrlGeneratorInterface */
+    /**
+     * @var UrlGeneratorInterface
+     */
     private $router;
 
     /**
@@ -39,21 +43,17 @@ class EmailService
     public function sendEmailConfirmationMessage(Request $request, User $user): void
     {
         $emailConfirmation = $user->getEmailConfirmations()->first();
-
-        dd('stop');
-
         $protocol = $request->isSecure() ? 'https://' : 'http://';
         $domain = $_ENV['APP_DOMAIN'];
-        $url = $this->router->generate('registerEmailConfirmation', ['hash' => $email->getHash()]);
+        $url = $this->router->generate('emailConfirmation', ['hash' => $emailConfirmation->getHash()]);
         $emailConfirmationUrl = $protocol . $domain . $url;
-
         $sendEmail = (new TemplatedEmail())
-            ->from('admin@' . $domain)
-            ->to($email->getEmail())
+            ->from("admin@$domain")
+            ->to($user->getEmail())
             ->subject('Email confirmation')
             ->htmlTemplate('emails/email_confirmation.html.twig')
             ->context([
-                'fullname' => $user->getFullname(),
+                'name' => $user->getName(),
                 'emailConfirmationUrl' => $emailConfirmationUrl
             ]);
 
@@ -69,14 +69,13 @@ class EmailService
     public function sendPasswordRecoveryMessage(User $user, string $token): void
     {
         $domain = $_ENV['APP_DOMAIN'];
-        $email = $user->getEmails()->first();
         $sendEmail = (new TemplatedEmail())
-            ->from('admin@' . $domain)
-            ->to($email->getEmail())
+            ->from("admin@$domain")
+            ->to($user->getEmail())
             ->subject('Password recovery')
             ->htmlTemplate('emails/password_recovery.html.twig')
             ->context([
-                'fullname' => $user->getFullname(),
+                'name' => $user->getName(),
                 'token' => $token
             ]);
 

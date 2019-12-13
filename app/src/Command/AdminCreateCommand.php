@@ -2,11 +2,11 @@
 
 namespace App\Command;
 
-use App\Entity\Email;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Services\UserService;
 use App\Services\ValidationService;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\Console\Command\Command;
@@ -19,13 +19,19 @@ class AdminCreateCommand extends Command
 {
     protected static $defaultName = 'admin:create';
 
-    /** @var ValidationService */
+    /**
+     * @var ValidationService
+     */
     private $validationService;
 
-    /** @var EntityManagerInterface */
+    /**
+     * @var EntityManagerInterface
+     */
     private $entityManager;
 
-    /** @var UserService */
+    /**
+     * @var UserService
+     */
     private $userService;
 
     /**
@@ -52,7 +58,6 @@ class AdminCreateCommand extends Command
     {
         $this
             ->setDescription('Create admin for application')
-            ->addArgument('username', InputArgument::REQUIRED, 'Admin username')
             ->addArgument('email', InputArgument::REQUIRED, 'Admin email')
             ->addArgument('password', InputArgument::REQUIRED, 'Admin password');
     }
@@ -77,17 +82,11 @@ class AdminCreateCommand extends Command
         }
 
         $user = new User();
-        $user->setFullname('Admin');
-        $user->setUsername($input->getArgument('username'));
+        $user->setName('Admin');
+        $user->setEmail($input->getArgument('email'));
+        $user->setEmailConfirmedAt(new DateTime());
         $user->setPlainPassword($input->getArgument('password'));
         $user->setRoles([User::ROLE_ADMIN]);
-
-        $email = new Email();
-        $email->setEmail($input->getArgument('email'));
-        $email->setVerified(true);
-        $email->setPrePersistDefaults();
-
-        $user->addEmail($email);
 
         $this->validationService->validate($user);
         $this->userService->encodeUserPassword($user);

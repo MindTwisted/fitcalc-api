@@ -46,58 +46,35 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @param string $value
+     * @param string $email
      *
      * @return User|null
      *
      * @throws NonUniqueResultException
      */
-    public function findOneByUsernameJoinedToVerifiedEmail(string $value): ?User
+    public function findOneByConfirmedEmail(string $email): ?User
     {
         return $this->createQueryBuilder('u')
-            ->andWhere('u.username = :val')
-            ->setParameter('val', $value)
-            ->join('u.emails', 'e')
-            ->andWhere('e.verified = 1')
-            ->addSelect('e')
+            ->andWhere('u.email = :email')
+            ->setParameter('email', $email)
+            ->andWhere("u.emailConfirmedAt is not NULL")
             ->getQuery()
             ->getOneOrNullResult();
     }
 
     /**
-     * @param string $value
+     * @param int $id
      *
      * @return User|null
      *
      * @throws NonUniqueResultException
      */
-    public function findOneByVerifiedEmail(string $value): ?User
+    public function findOneWithConfirmedEmailById(int $id): ?User
     {
         return $this->createQueryBuilder('u')
-            ->join('u.emails', 'e')
-            ->andWhere('e.verified = 1')
-            ->andWhere('e.email = :val')
-            ->setParameter('val', $value)
-            ->addSelect('e')
-            ->getQuery()
-            ->getOneOrNullResult();
-    }
-
-    /**
-     * @param int $value
-     *
-     * @return User|null
-     *
-     * @throws NonUniqueResultException
-     */
-    public function findOneByIdJoinedToVerifiedEmail(int $value): ?User
-    {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.id = :val')
-            ->setParameter('val', $value)
-            ->join('u.emails', 'e')
-            ->andWhere('e.verified = 1')
-            ->addSelect('e')
+            ->andWhere('u.id = :id')
+            ->setParameter('id', $id)
+            ->andWhere("u.emailConfirmedAt is not NULL")
             ->getQuery()
             ->getOneOrNullResult();
     }
@@ -116,17 +93,15 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
-     * @param string $fullname
-     * @param string $username
+     * @param string $name
      * @param string $email
      * @param int $offset
      * @param int $limit
      *
      * @return array
      */
-    public function findAppUsersJoinedToVerifiedEmail(
-        string $fullname = '',
-        string $username = '',
+    public function findAppUsersWithConfirmedEmail(
+        string $name = '',
         string $email = '',
         int $offset = 0,
         int $limit = 50
@@ -135,15 +110,11 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return $this->createQueryBuilder('u')
             ->andWhere('u.roles LIKE :role')
             ->setParameter('role', '%"' . User::ROLE_APP_USER . '"%')
-            ->andWhere('u.fullname LIKE :fullname')
-            ->setParameter('fullname', "%$fullname%")
-            ->andWhere('u.username LIKE :username')
-            ->setParameter('username', "%$username%")
-            ->join('u.emails', 'e')
-            ->andWhere('e.verified = 1')
-            ->andWhere('e.email LIKE :email')
+            ->andWhere('u.name LIKE :name')
+            ->setParameter('name', "%$name%")
+            ->andWhere('u.email LIKE :email')
             ->setParameter('email', "%$email%")
-            ->addSelect('e')
+            ->andWhere("u.emailConfirmedAt is not NULL")
             ->orderBy('u.id', 'ASC')
             ->setFirstResult( $offset )
             ->setMaxResults( $limit )
