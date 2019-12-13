@@ -20,9 +20,22 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
-    public function __construct(ManagerRegistry $registry)
+    /**
+     * @var EmailConfirmationRepository
+     */
+    private $emailConfirmationRepository;
+
+    /**
+     * UserRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     * @param EmailConfirmationRepository $emailConfirmationRepository
+     */
+    public function __construct(ManagerRegistry $registry, EmailConfirmationRepository $emailConfirmationRepository)
     {
         parent::__construct($registry, User::class);
+
+        $this->emailConfirmationRepository = $emailConfirmationRepository;
     }
 
     /**
@@ -120,5 +133,18 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setMaxResults( $limit )
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * @param array $payload
+     *
+     * @return array
+     */
+    public function emailUniquenessCheck(array $payload): array
+    {
+        $users = $this->findBy($payload);
+        $emails = $this->emailConfirmationRepository->findBy($payload);
+
+        return array_merge($users, $emails);
     }
 }

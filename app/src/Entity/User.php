@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  * @ORM\Table(indexes={@ORM\Index(name="user_name_search_index", columns={"name"})})
- * @UniqueEntity("email")
+ * @UniqueEntity("email", repositoryMethod="emailUniquenessCheck")
  */
 class User implements UserInterface
 {

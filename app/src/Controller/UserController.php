@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\EmailConfirmation;
 use App\Entity\PasswordRecovery;
 use App\Entity\User;
 use App\Exception\ValidationException;
@@ -251,6 +252,81 @@ class UserController extends AbstractController
                 ['%name%' => $user->getName()]
             ),
             'data' => compact('user')
+        ]);
+    }
+
+    /**
+     * @Route("/email", name="updateCurrentUserEmail", methods={"PUT"})
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param AuthService $authService
+     * @param ValidationService $validationService
+     * @param EmailService $emailService
+     *
+     * @return JsonResponse
+     *
+     * @throws ValidationException
+     * @throws Exception
+     */
+    public function updateCurrentUserEmail(
+        Request $request,
+        TranslatorInterface $translator,
+        AuthService $authService,
+        ValidationService $validationService,
+        EmailService $emailService
+    ): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if (!$authService->isPasswordValid($user, $request->get('old_password'))) {
+            return $this->json(
+                ['message' => $translator->trans('Old password is invalid.')],
+                JsonResponse::HTTP_BAD_REQUEST
+            );
+        }
+
+        /**
+         * TODO: найти способ валидировать уникальность имейла в User и в EmailConfirmation
+         */
+
+        dd('stop');
+
+        $oldEmail = $user->getEmail();
+        $newEmail = $request->get('email', '');
+
+        $user->setEmail($newEmail);
+
+        $validationService->validate($user);
+
+        $user->setEmail($oldEmail);
+        $emailConfirmation = new EmailConfirmation();
+        $emailConfirmation->setEmail($newEmail);
+        $emailConfirmation->setPrePersistDefaults();
+        $user->addEmailConfirmation($emailConfirmation);
+
+        try {
+            $emailService->sendEmailConfirmationMessage($request, $user);
+        } catch (TransportExceptionInterface $exception) {
+            return $this->json(
+                ['message' => $translator->trans('Unexpected error has been occurred, please try again later.')],
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
+            );
+        }
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($emailConfirmation);
+        $entityManager->flush();
+
+        return $this->json([
+            'message' => $translator->trans(
+                'Email change process has been started. Please follow the instructions that has been sent to email - %email%.',
+                ['%email%' => $emailConfirmation->getEmail()]
+            )
         ]);
     }
 }
