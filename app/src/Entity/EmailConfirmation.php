@@ -11,7 +11,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 /**
  * @ORM\Entity(repositoryClass="App\Repository\EmailConfirmationRepository")
  * @ORM\HasLifecycleCallbacks()
- * @UniqueEntity("email")
+ * @UniqueEntity("email", repositoryMethod="emailUniquenessCheck")
  * @UniqueEntity("hash")
  */
 class EmailConfirmation

@@ -27,3 +27,4 @@ Forbidden.: Запрещено.
 'Follow this link to confirm an email: %emailConfirmationUrl%': 'Пройдите по данной ссылке для подтверждения имейла: %emailConfirmationUrl%'
 'User %name% has been successfully logged-in.': 'Пользователь %name% был успешно залогинен.'
 'Access token for user %name% has been successfully refreshed.': 'Токен доступа для пользователя %name% был успешно обновлён.'
+'Email change process has been started. Please follow the instructions that were sent to email - %email%.': 'Процесс смены имейла начался. Пожалуйста, следуйте инструкциям, которые были отправлены на имейл - %email%.'

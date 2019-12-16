@@ -21,21 +21,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class UserRepository extends ServiceEntityRepository implements PasswordUpgraderInterface
 {
     /**
-     * @var EmailConfirmationRepository
-     */
-    private $emailConfirmationRepository;
-
-    /**
      * UserRepository constructor.
      *
      * @param ManagerRegistry $registry
-     * @param EmailConfirmationRepository $emailConfirmationRepository
      */
-    public function __construct(ManagerRegistry $registry, EmailConfirmationRepository $emailConfirmationRepository)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);
-
-        $this->emailConfirmationRepository = $emailConfirmationRepository;
     }
 
     /**
@@ -142,9 +134,13 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
      */
     public function emailUniquenessCheck(array $payload): array
     {
-        $users = $this->findBy($payload);
-        $emails = $this->emailConfirmationRepository->findBy($payload);
-
-        return array_merge($users, $emails);
+        return $this->createQueryBuilder('u')
+            ->leftJoin('u.emailConfirmations', 'e')
+            ->orWhere('u.email = :email')
+            ->orWhere('e.email = :email')
+            ->setParameter('email', $payload['email'])
+            ->addSelect('e')
+            ->getQuery()
+            ->getResult();
     }
 }

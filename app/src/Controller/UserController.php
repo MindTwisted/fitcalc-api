@@ -289,23 +289,12 @@ class UserController extends AbstractController
             );
         }
 
-        /**
-         * TODO: найти способ валидировать уникальность имейла в User и в EmailConfirmation
-         */
-
-        dd('stop');
-
-        $oldEmail = $user->getEmail();
-        $newEmail = $request->get('email', '');
-
-        $user->setEmail($newEmail);
-
-        $validationService->validate($user);
-
-        $user->setEmail($oldEmail);
         $emailConfirmation = new EmailConfirmation();
-        $emailConfirmation->setEmail($newEmail);
+        $emailConfirmation->setEmail($request->get('email', ''));
         $emailConfirmation->setPrePersistDefaults();
+
+        $validationService->validate($emailConfirmation);
+
         $user->addEmailConfirmation($emailConfirmation);
 
         try {
@@ -324,7 +313,7 @@ class UserController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans(
-                'Email change process has been started. Please follow the instructions that has been sent to email - %email%.',
+                'Email change process has been started. Please follow the instructions that were sent to email - %email%.',
                 ['%email%' => $emailConfirmation->getEmail()]
             )
         ]);

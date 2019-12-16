@@ -15,9 +15,22 @@ use Doctrine\ORM\NonUniqueResultException;
  */
 class EmailConfirmationRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    /**
+     * @var UserRepository
+     */
+    private $userRepository;
+
+    /**
+     * EmailConfirmationRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     * @param UserRepository $userRepository
+     */
+    public function __construct(ManagerRegistry $registry, UserRepository $userRepository)
     {
         parent::__construct($registry, EmailConfirmation::class);
+
+        $this->userRepository = $userRepository;
     }
 
     /**
@@ -36,5 +49,15 @@ class EmailConfirmationRepository extends ServiceEntityRepository
             ->addSelect('u')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @param array $payload
+     *
+     * @return array
+     */
+    public function emailUniquenessCheck(array $payload): array
+    {
+        return $this->userRepository->emailUniquenessCheck($payload);
     }
 }

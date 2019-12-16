@@ -49,7 +49,7 @@ class EmailService
         $emailConfirmationUrl = $protocol . $domain . $url;
         $sendEmail = (new TemplatedEmail())
             ->from("admin@$domain")
-            ->to($user->getEmail())
+            ->to($emailConfirmation->getEmail())
             ->subject('Email confirmation')
             ->htmlTemplate('emails/email_confirmation.html.twig')
             ->context([
