@@ -12,3 +12,10 @@ services:
       - { name: doctrine.event_subscriber, connection: default }
     calls:
       - [ setAnnotationReader, [ "@annotation_reader" ] ]
+  Gedmo\Translatable\TranslatableListener:
+    tags:
+      - { name: doctrine.event_subscriber, connection: default }
+    calls:
+      - [ setAnnotationReader, [ "@annotation_reader" ] ]
+      - [ setDefaultLocale, [ 'en' ] ]
+      - [ setTranslationFallback, [ false ] ]
