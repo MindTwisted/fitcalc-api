@@ -63,11 +63,6 @@ GET /api/products?search={name}&user_id={user_id}&offset={offset}&limit={limit}(
 protection: user
 notes: user can see only products with user_id == null and user_id == current_user_id, admin can see all products
 
-POST /api/products
-body: name, proteins, fats, carbohydrates, calories, ?user_id (admin only)
-protection: user
-notes: user can add products with user_id == current_user_id, admin can add products for all
-
 POST /api/products/verify_upload
 body: csv file
 protection: admin
