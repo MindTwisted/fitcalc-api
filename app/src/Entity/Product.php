@@ -40,7 +40,6 @@ class Product implements Translatable
      *
      * @Assert\NotBlank()
      * @Assert\Length(min="5")
-     * @Assert\Regex(pattern="/^[0-9A-Za-z\s\-\_\(\)]+$/")
      *
      */
     private $name;

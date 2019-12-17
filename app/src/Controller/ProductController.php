@@ -8,6 +8,7 @@ use App\Entity\ProductTranslation;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
+use App\Services\ProductService;
 use App\Services\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -34,6 +35,7 @@ class ProductController extends AbstractController
      * @param Request $request
      * @param TranslatorInterface $translator
      * @param ValidationService $validationService
+     * @param ProductService $productService
      *
      * @return JsonResponse
      *
@@ -42,35 +44,13 @@ class ProductController extends AbstractController
     public function addProduct(
         Request $request,
         TranslatorInterface $translator,
-        ValidationService $validationService
+        ValidationService $validationService,
+        ProductService $productService
     ): JsonResponse
     {
-        /**
-         * TODO:
-         * 1) если продукт добавляет админ:
-         * - нужно вводить en, ru версии имени
-         * 2) если продукт добавляет пользователь
-         * - нужно принимать только одну версию имени и если локализация en - записывать в основное,
-         * если локализация ru - в основной записывать рандомную строку и создавать перевод с именем
-         * 3) решить всё при помощи ProductService
-         */
-
         /** @var User $user */
         $user = $this->getUser();
-        $product = new Product();
-        $product->setName($request->get('name', ''));
-        $product->setProteins(floatval($request->get('proteins')));
-        $product->setCarbohydrates(floatval($request->get('carbohydrates')));
-        $product->setFats(floatval($request->get('fats')));
-        $product->setCalories($request->request->getInt('calories'));
-        $product->setLocale('en');
-        $product->addTranslation(
-            new ProductTranslation('ru', 'name', $request->get('name_ru', ''))
-        );
-
-        if (!$user->isAdmin()) {
-            $product->setUser($user);
-        }
+        $product = $productService->createProduct($user, $request);
 
         $validationService->validate($product);
 

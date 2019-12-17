@@ -41,7 +41,7 @@ class ProductRepository extends ServiceEntityRepository
     ): array
     {
         $query = $this->createQueryBuilder('p')
-            ->join('p.translations', 't')
+            ->leftJoin('p.translations', 't')
             ->addSelect('t')
             ->andWhere('p.name LIKE :name')
             ->setParameter('name', "%$name%");
@@ -53,7 +53,7 @@ class ProductRepository extends ServiceEntityRepository
             ));
         }
 
-        $query = $query->orderBy('p.id', 'ASC')
+        $query = $query->orderBy('p.updatedAt', 'DESC')
             ->setFirstResult( $offset )
             ->setMaxResults($limit)
             ->getQuery()
