@@ -59,18 +59,6 @@ access token хранится в базе не будет, он будет пр�
 ###Routes list
 
 ```
-GET /api/products?search={name}&user_id={user_id}&offset={offset}&limit={limit}(max 100)
-protection: user
-notes: user can see only products with user_id == null and user_id == current_user_id, admin can see all products
-
-POST /api/products/verify_upload
-body: csv file
-protection: admin
-
-POST /api/products/upload
-body: csv file
-protection: admin
-
 PUT /api/products/{id}
 body: name, proteins, fats, carbohydrates, calories, ?user_id (admin only)
 protection: user
@@ -79,6 +67,14 @@ notes: user can update only products with user_id == current_user_id, admin can 
 DELETE /api/products/{id}
 protection: user
 notes: user can delete only products with user_id == current_user_id, admin can delete all products
+
+POST /api/products/csv_bulk_upload
+body: csv file
+protection: admin
+
+POST /api/products/bulk_upload
+body: array data
+protection: admin
 
 GET /api/eating?user_id={user_id}&date={date}&offset={offset}&limit={limit}(max 100)
 protection: user

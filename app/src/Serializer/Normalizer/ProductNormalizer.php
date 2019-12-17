@@ -3,7 +3,6 @@
 namespace App\Serializer\Normalizer;
 
 use App\Entity\Product;
-use App\Entity\ProductTranslation;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -15,23 +14,13 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
     private $userNormalizer;
 
     /**
-     * @var ProductTranslationNormalizer
-     */
-    private $productTranslationNormalizer;
-
-    /**
      * ProductNormalizer constructor.
      *
      * @param UserNormalizer $userNormalizer
-     * @param ProductTranslationNormalizer $productTranslationNormalizer
      */
-    public function __construct(
-        UserNormalizer $userNormalizer,
-        ProductTranslationNormalizer $productTranslationNormalizer
-    )
+    public function __construct(UserNormalizer $userNormalizer)
     {
         $this->userNormalizer = $userNormalizer;
-        $this->productTranslationNormalizer = $productTranslationNormalizer;
     }
 
     /**
@@ -49,13 +38,7 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
             'proteins' => $object->getProteins(),
             'fats' => $object->getFats(),
             'carbohydrates' => $object->getCarbohydrates(),
-            'calories' => $object->getCalories(),
-            'translations' => array_map(
-                function (ProductTranslation $productTranslation) {
-                    return $this->productTranslationNormalizer->normalize($productTranslation);
-                },
-                $object->getTranslations()->toArray()
-            ),
+            'calories' => $object->getCalories()
         ];
 
         if ($object->getUser()) {

@@ -7,6 +7,7 @@ use App\Entity\Product;
 use App\Entity\ProductTranslation;
 use App\Entity\User;
 use App\Exception\ValidationException;
+use App\Repository\ProductRepository;
 use App\Services\ValidationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -44,6 +45,16 @@ class ProductController extends AbstractController
         ValidationService $validationService
     ): JsonResponse
     {
+        /**
+         * TODO:
+         * 1) если продукт добавляет админ:
+         * - нужно вводить en, ru версии имени
+         * 2) если продукт добавляет пользователь
+         * - нужно принимать только одну версию имени и если локализация en - записывать в основное,
+         * если локализация ru - в основной записывать рандомную строку и создавать перевод с именем
+         * 3) решить всё при помощи ProductService
+         */
+
         /** @var User $user */
         $user = $this->getUser();
         $product = new Product();
@@ -72,5 +83,31 @@ class ProductController extends AbstractController
             'message' => $translator->trans('Product has been successfully added.'),
             'data' => compact('product')
         ]);
+    }
+
+    /**
+     * @Route("", name="getAllProducts", methods={"GET"})
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param Request $request
+     *
+     * @return JsonResponse
+     */
+    public function getAllProducts(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
+        $products = $productRepository->findWithTranslation(
+            $request->get('name', ''),
+            $user->isAdmin() ? null : $user->getId(),
+            $request->getLocale(),
+            $request->query->getInt('offset', 0)
+        );
+
+        return $this->json(['data' => compact('products')]);
     }
 }
