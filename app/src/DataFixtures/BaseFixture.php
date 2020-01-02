@@ -21,11 +21,17 @@ abstract class BaseFixture extends Fixture
     protected $faker;
 
     /**
+     * @var Generator
+     */
+    protected $russianFaker;
+
+    /**
      * BaseFixture constructor.
      */
     public function __construct()
     {
         $this->faker = Factory::create();
+        $this->russianFaker = Factory::create('ru_RU');
     }
 
     /**
