@@ -71,22 +71,15 @@ class ProductController extends AbstractController
      * @IsGranted(User::ROLE_USER)
      *
      * @param Request $request
+     * @param ProductService $productService
      *
      * @return JsonResponse
      */
-    public function getAllProducts(Request $request): JsonResponse
+    public function getAllProducts(Request $request, ProductService $productService): JsonResponse
     {
         /** @var User $user */
         $user = $this->getUser();
-
-        /** @var ProductRepository $productRepository */
-        $productRepository = $this->getDoctrine()->getRepository(Product::class);
-        $products = $productRepository->findWithTranslation(
-            $request->get('name', ''),
-            $user->isAdmin() ? null : $user->getId(),
-            $request->getLocale(),
-            $request->query->getInt('offset', 0)
-        );
+        $products = $productService->getProducts($user, $request);
 
         return $this->json(['data' => compact('products')]);
     }

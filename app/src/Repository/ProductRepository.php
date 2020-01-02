@@ -18,6 +18,11 @@ use function Doctrine\ORM\QueryBuilder;
  */
 class ProductRepository extends ServiceEntityRepository
 {
+    /**
+     * ProductRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Product::class);
@@ -32,7 +37,7 @@ class ProductRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function findWithTranslation(
+    public function findWithTranslationLocalized(
         string $name = '',
         ?int $userId = null,
         string $locale = 'en',
@@ -65,6 +70,52 @@ class ProductRepository extends ServiceEntityRepository
             ->setHint(
                 TranslatableListener::HINT_TRANSLATABLE_LOCALE,
                 $locale
+            )
+            ->setHint(
+                TranslatableListener::HINT_FALLBACK,
+                1 // fallback to default values in case if record is not translated
+            )
+            ->getResult();
+
+        return $query;
+    }
+
+    /**
+     * @param string|null $name
+     * @param int|null $userId
+     * @param int $offset
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function findWithTranslation(
+        string $name = '',
+        ?int $userId = null,
+        int $offset = 0,
+        int $limit = 50
+    ): array
+    {
+        $query = $this->createQueryBuilder('p')
+            ->leftJoin('p.translations', 't')
+            ->addSelect('t')
+            ->andWhere('p.name LIKE :name')
+            ->setParameter('name', "%$name%");
+
+        if ($userId) {
+            $query = $query->andWhere($query->expr()->orX(
+                $query->expr()->isNull('p.user'),
+                $query->expr()->eq('p.user', $userId)
+            ));
+        }
+
+        $query = $query->orderBy('p.updatedAt', 'DESC')
+            ->setFirstResult( $offset )
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->useQueryCache(false)
+            ->setHint(
+                Query::HINT_CUSTOM_OUTPUT_WALKER,
+                'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
             )
             ->setHint(
                 TranslatableListener::HINT_FALLBACK,
