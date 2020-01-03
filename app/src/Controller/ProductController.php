@@ -4,13 +4,11 @@ namespace App\Controller;
 
 
 use App\Entity\Product;
-use App\Entity\ProductTranslation;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
 use App\Services\ProductService;
-use App\Services\ValidationService;
-use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,7 +32,6 @@ class ProductController extends AbstractController
      *
      * @param Request $request
      * @param TranslatorInterface $translator
-     * @param ValidationService $validationService
      * @param ProductService $productService
      *
      * @return JsonResponse
@@ -44,20 +41,10 @@ class ProductController extends AbstractController
     public function addProduct(
         Request $request,
         TranslatorInterface $translator,
-        ValidationService $validationService,
         ProductService $productService
     ): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-        $product = $productService->createProduct($user, $request);
-
-        $validationService->validate($product);
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($product);
-        $entityManager->flush();
+        $product = $productService->createOrUpdateProduct($request);
 
         return $this->json([
             'message' => $translator->trans('Product has been successfully added.'),
@@ -77,10 +64,56 @@ class ProductController extends AbstractController
      */
     public function getAllProducts(Request $request, ProductService $productService): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->getUser();
-        $products = $productService->getProducts($user, $request);
+        $products = $productService->getProducts($request);
 
         return $this->json(['data' => compact('products')]);
+    }
+
+    /**
+     * @Route(
+     *     "/{id}",
+     *     requirements={"id"="\d+"},
+     *     name="updateProduct",
+     *     methods={"PUT"}
+     * )
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param int $id
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param ProductService $productService
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     * @throws ValidationException
+     */
+    public function updateProduct(
+        int $id,
+        Request $request,
+        TranslatorInterface $translator,
+        ProductService $productService
+    ): JsonResponse
+    {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
+        $product = $productRepository->findOneWithTranslationById($id);
+
+        if (!$product) {
+            return $this->json(
+                ['message' => $translator->trans('Not found.')],
+                JsonResponse::HTTP_NOT_FOUND
+            );
+        }
+
+        $this->denyAccessUnlessGranted('edit', $product);
+
+        $product = $productService->createOrUpdateProduct($request, $product);
+
+        return $this->json([
+            'message' => $translator->trans('Product has been successfully updated.'),
+            'data' => compact('product')
+        ]);
     }
 }

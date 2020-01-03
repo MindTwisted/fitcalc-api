@@ -6,6 +6,7 @@ namespace App\Repository;
 use App\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\Query;
 use Gedmo\Translatable\TranslatableListener;
 use function Doctrine\ORM\QueryBuilder;
@@ -124,5 +125,32 @@ class ProductRepository extends ServiceEntityRepository
             ->getResult();
 
         return $query;
+    }
+
+    /**
+     * @param int $id
+     *
+     * @return Product|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneWithTranslationById(int $id): ?Product
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.translations', 't')
+            ->addSelect('t')
+            ->andWhere('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->useQueryCache(false)
+            ->setHint(
+                Query::HINT_CUSTOM_OUTPUT_WALKER,
+                'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
+            )
+            ->setHint(
+                TranslatableListener::HINT_FALLBACK,
+                1 // fallback to default values in case if record is not translated
+            )
+            ->getOneOrNullResult();
     }
 }
