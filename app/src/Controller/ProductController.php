@@ -7,6 +7,7 @@ use App\Entity\Product;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
+use App\Security\Voter\ProductVoter;
 use App\Services\ProductService;
 use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -107,13 +108,57 @@ class ProductController extends AbstractController
             );
         }
 
-        $this->denyAccessUnlessGranted('edit', $product);
+        $this->denyAccessUnlessGranted(ProductVoter::EDIT, $product);
 
         $product = $productService->createOrUpdateProduct($request, $product);
 
         return $this->json([
             'message' => $translator->trans('Product has been successfully updated.'),
             'data' => compact('product')
+        ]);
+    }
+
+    /**
+     * @Route(
+     *     "/{id}",
+     *     requirements={"id"="\d+"},
+     *     name="deleteProduct",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param int $id
+     * @param TranslatorInterface $translator
+     * @param ProductService $productService
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     */
+    public function deleteProduct(
+        int $id,
+        TranslatorInterface $translator,
+        ProductService $productService
+    ): JsonResponse
+    {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
+        $product = $productRepository->findOneWithTranslationById($id);
+
+        if (!$product) {
+            return $this->json(
+                ['message' => $translator->trans('Not found.')],
+                JsonResponse::HTTP_NOT_FOUND
+            );
+        }
+
+        $this->denyAccessUnlessGranted(ProductVoter::DELETE, $product);
+
+        $productService->deleteProduct($product);
+
+        return $this->json([
+            'message' => $translator->trans('Product has been successfully deleted.')
         ]);
     }
 }

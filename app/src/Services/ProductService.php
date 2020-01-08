@@ -81,6 +81,15 @@ class ProductService
     }
 
     /**
+     * @param Product $product
+     */
+    public function deleteProduct(Product $product): void
+    {
+        $this->entityManager->remove($product);
+        $this->entityManager->flush();
+    }
+
+    /**
      * @param Request $request
      * @param Product|null $product
      *

@@ -9,10 +9,6 @@
 ### Routes list
 
 ```
-DELETE /api/products/{id}
-protection: user
-notes: user can delete only products with user_id == current_user_id, admin can delete all products
-
 POST /api/products/csv_bulk_upload
 body: csv file
 protection: admin

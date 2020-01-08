@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 class ProductVoter extends Voter
 {
     const EDIT = 'edit';
+    const DELETE = 'delete';
 
     /**
      * @param string $attribute
@@ -19,7 +20,7 @@ class ProductVoter extends Voter
      */
     protected function supports($attribute, $subject): bool
     {
-        return in_array($attribute, [self::EDIT])
+        return in_array($attribute, [self::EDIT, self::DELETE])
             && $subject instanceof Product;
     }
 
@@ -42,6 +43,7 @@ class ProductVoter extends Voter
 
         switch ($attribute) {
             case self::EDIT:
+            case self::DELETE:
                 return $this->canEdit($product, $user);
         }
 
