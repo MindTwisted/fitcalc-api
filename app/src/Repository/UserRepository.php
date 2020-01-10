@@ -3,14 +3,17 @@
 namespace App\Repository;
 
 use App\Entity\User;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\OptimisticLockException;
 use Doctrine\ORM\ORMException;
+use Exception;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use function get_class;
 
 /**
  * @method User|null find($id, $lockMode = null, $lockVersion = null)
@@ -42,7 +45,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function upgradePassword(UserInterface $user, string $newEncodedPassword): void
     {
         if (!$user instanceof User) {
-            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', get_class($user)));
         }
 
         $user->setPassword($newEncodedPassword);
@@ -121,8 +124,8 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->setParameter('email', "%$email%")
             ->andWhere("u.emailConfirmedAt is not NULL")
             ->orderBy('u.id', 'ASC')
-            ->setFirstResult( $offset )
-            ->setMaxResults( $limit )
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }
@@ -140,6 +143,25 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->orWhere('e.email = :email')
             ->setParameter('email', $payload['email'])
             ->addSelect('e')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param int $hours
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function findAppUsersWithNotConfirmedEmailsOlderThan(int $hours): array
+    {
+        return $this->createQueryBuilder('u')
+            ->andWhere("u.emailConfirmedAt is NULL")
+            ->andWhere('u.createdAt < :time')
+            ->setParameter('time', (new DateTime())->modify("-$hours hours"))
+            ->andWhere('u.roles LIKE :role')
+            ->setParameter('role', '%"' . User::ROLE_APP_USER . '"%')
             ->getQuery()
             ->getResult();
     }

@@ -2,7 +2,7 @@
 
 ### Crons
 
-1) remove client accounts older than 72 hours with not-confirmed emails (once a day)
+1) run cron once a day - php bin/console task:remove-users-with-not-confirmed-emails 72
 2) remove expired and soft deleted refresh tokens older than 3 months (once a week)
 3) remove password recoveries older than 24 hours (once an hour)
 
