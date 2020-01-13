@@ -3,9 +3,11 @@
 namespace App\Repository;
 
 use App\Entity\PasswordRecovery;
+use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
+use Exception;
 
 /**
  * @method PasswordRecovery|null find($id, $lockMode = null, $lockVersion = null)
@@ -35,5 +37,21 @@ class PasswordRecoveryRepository extends ServiceEntityRepository
             ->addSelect('u')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @param int $hours
+     *
+     * @return PasswordRecovery[]
+     *
+     * @throws Exception
+     */
+    public function findOlderThan(int $hours): array
+    {
+        return $this->createQueryBuilder('p')
+            ->andWhere('p.createdAt < :time')
+            ->setParameter('time', (new DateTime())->modify("-$hours hours"))
+            ->getQuery()
+            ->getResult();
     }
 }
