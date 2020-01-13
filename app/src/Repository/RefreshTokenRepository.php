@@ -8,6 +8,7 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use function Doctrine\ORM\QueryBuilder;
 
 /**
  * @method RefreshToken|null find($id, $lockMode = null, $lockVersion = null)
@@ -102,5 +103,28 @@ class RefreshTokenRepository extends ServiceEntityRepository
             ->addSelect('u')
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @param int $hours
+     *
+     * @return RefreshToken[]
+     *
+     * @throws Exception
+     */
+    public function findExpiredOrDeletedOlderThan(int $hours): array
+    {
+        $query = $this->createQueryBuilder('r');
+        $query = $query->andWhere(
+            $query->expr()->orX(
+                $query->expr()->isNotNull('r.deletedAt'),
+                $query->expr()->lt('r.expiresAt', ':now')
+            )
+        )
+            ->setParameter('now', new DateTime());
+        $query = $query->andWhere('r.createdAt < :time')
+            ->setParameter('time', (new DateTime())->modify("-$hours hours"));
+
+        return $query->getQuery()->getResult();
     }
 }

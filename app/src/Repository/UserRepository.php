@@ -150,7 +150,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @param int $hours
      *
-     * @return array
+     * @return User[]
      *
      * @throws Exception
      */

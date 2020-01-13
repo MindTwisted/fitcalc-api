@@ -3,7 +3,7 @@
 ### Crons
 
 1) run cron once a day - php bin/console task:remove-users-with-not-confirmed-emails 72
-2) remove expired and soft deleted refresh tokens older than 3 months (once a week)
+2) run cron once a week - php bin/console task:remove-expired-and-soft-deleted-refresh-tokens 2160
 3) remove password recoveries older than 24 hours (once an hour)
 
 ### Routes list
