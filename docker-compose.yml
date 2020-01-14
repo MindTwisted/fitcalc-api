@@ -2,13 +2,23 @@ version: "3"
 
 services:
   web:
-    build:
-      context: ./docker/php
-      dockerfile: Dockerfile
+    image: nginx:latest
     ports:
       - "8000:80"
     volumes:
       - ./app:$APP_ROOT
+      - ./docker/web/site.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - code-network
+
+  php:
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile
+    volumes:
+      - ./app:$APP_ROOT
+    networks:
+      - code-network
     environment:
       KEYS_PASSPHRASE: $KEYS_PASSPHRASE
       APP_ROOT: $APP_ROOT
@@ -24,6 +34,8 @@ services:
       - "33060:3306"
     volumes:
       - dbvolume:/var/lib/mysql
+    networks:
+      - code-network
     environment:
       MYSQL_DATABASE: $MYSQL_DATABASE
       MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
@@ -32,3 +44,7 @@ services:
 
 volumes:
   dbvolume:
+
+networks:
+  code-network:
+    driver: bridge

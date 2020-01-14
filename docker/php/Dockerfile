@@ -1,4 +1,4 @@
-FROM php:7.2-apache
+FROM php:7.3-fpm-stretch
 
 RUN apt-get -y update && \
     apt-get install -y git zip unzip libicu-dev libxslt-dev
@@ -23,6 +23,3 @@ RUN docker-php-ext-configure intl && docker-php-ext-install intl
 RUN docker-php-ext-install xsl
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-RUN a2enmod rewrite
-RUN rm -rf /var/www/html && ln -s /app/public /var/www/html
