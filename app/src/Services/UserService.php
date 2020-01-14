@@ -12,8 +12,12 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class UserService
@@ -26,6 +30,11 @@ class UserService
     private $entityManager;
 
     /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
      * @var UserPasswordEncoderInterface
      */
     private $userPasswordEncoder;
@@ -36,21 +45,32 @@ class UserService
     private $validationService;
 
     /**
+     * @var EmailService
+     */
+    private $emailService;
+
+    /**
      * UserService constructor.
      *
      * @param EntityManagerInterface $entityManager
+     * @param TranslatorInterface $translator
      * @param UserPasswordEncoderInterface $userPasswordEncoder
      * @param ValidationService $validationService
+     * @param EmailService $emailService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
+        TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder,
-        ValidationService $validationService
+        ValidationService $validationService,
+        EmailService $emailService
     )
     {
         $this->entityManager = $entityManager;
+        $this->translator = $translator;
         $this->userPasswordEncoder = $userPasswordEncoder;
         $this->validationService = $validationService;
+        $this->emailService = $emailService;
     }
 
     /**
@@ -138,9 +158,35 @@ class UserService
      * @return User
      *
      * @throws ValidationException
+     */
+    public function registerUser(Request $request): User
+    {
+        $user = $this->createUserForRegistration($request);
+
+        try {
+            $this->emailService->sendEmailConfirmationMessage($request, $user);
+        } catch (TransportExceptionInterface $exception) {
+            throw new HttpException(
+                JsonResponse::HTTP_INTERNAL_SERVER_ERROR,
+                $this->translator->trans('Unexpected error has been occurred, please try again later.')
+            );
+        }
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $user;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return User
+     *
+     * @throws ValidationException
      * @throws Exception
      */
-    public function createUserForRegistration(Request $request): User
+    private function createUserForRegistration(Request $request): User
     {
         $user = new User();
         $user->setName($request->get('name', ''));

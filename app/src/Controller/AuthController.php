@@ -9,7 +9,6 @@ use App\Exception\ValidationException;
 use App\Repository\EmailConfirmationRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Services\AuthService;
-use App\Services\EmailService;
 use App\Services\UserService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,7 +18,6 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -51,35 +49,19 @@ class AuthController extends AbstractController
      *
      * @param Request $request
      * @param UserService $userService
-     * @param EmailService $emailService
      * @param TranslatorInterface $translator
      *
      * @return JsonResponse
      *
-     * @throws Exception
+     * @throws ValidationException
      */
     public function register(
         Request $request,
         UserService $userService,
-        EmailService $emailService,
         TranslatorInterface $translator
     ): JsonResponse
     {
-        $user = $userService->createUserForRegistration($request);
-
-        try {
-            $emailService->sendEmailConfirmationMessage($request, $user);
-        } catch (TransportExceptionInterface $exception) {
-            return $this->json(
-                ['message' => $translator->trans('Unexpected error has been occurred, please try again later.')],
-                JsonResponse::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($user);
-        $entityManager->flush();
+        $user = $userService->registerUser($request);
 
         return $this->json([
             'message' => $translator->trans(
