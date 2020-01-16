@@ -7,6 +7,7 @@ use App\Entity\EmailConfirmation;
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Exception\ValidationException;
+use App\Repository\EmailConfirmationRepository;
 use App\Repository\UserRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
@@ -173,6 +174,38 @@ class UserService
         }
 
         $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $user;
+    }
+
+    /**
+     * @param string $hash
+     *
+     * @return User
+     *
+     * @throws NonUniqueResultException
+     * @throws HttpException
+     */
+    public function confirmEmail(string $hash): User
+    {
+        /** @var EmailConfirmationRepository $emailConfirmationRepository */
+        $emailConfirmationRepository = $this->entityManager->getRepository(EmailConfirmation::class);
+        $emailConfirmation = $emailConfirmationRepository->findOneByHashJoinedToUser($hash);
+
+        if (!$emailConfirmation) {
+            throw new HttpException(
+                JsonResponse::HTTP_FORBIDDEN,
+                $this->translator->trans('Forbidden.')
+            );
+        }
+
+        $user = $emailConfirmation->getUser();
+        $user->setEmail($emailConfirmation->getEmail());
+        $user->setEmailConfirmedAt(new DateTime());
+
+        $this->entityManager->persist($user);
+        $this->entityManager->remove($emailConfirmation);
         $this->entityManager->flush();
 
         return $user;

@@ -24,7 +24,7 @@ Forbidden.: Запрещено.
 'Old password is invalid.': 'Старый пароль недействителен.'
 'User %name% has been registered. Please confirm your email address.': 'Пользователь %name% был зарегестрирован. Пожалуйста, подтвердите ваш имейл.'
 'Hello, %name%': 'Здравствуйте, %name%'
-'Follow this link to confirm an email: %emailConfirmationUrl%': 'Пройдите по данной ссылке для подтверждения имейла: %emailConfirmationUrl%'
+'Follow this link to confirm an email': 'Пройдите по данной ссылке для подтверждения имейла'
 'User %name% has been successfully logged-in.': 'Пользователь %name% был успешно залогинен.'
 'Access token for user %name% has been successfully refreshed.': 'Токен доступа для пользователя %name% был успешно обновлён.'
 'Email change process has been started. Please follow the instructions that were sent to email - %email%.': 'Процесс смены имейла начался. Пожалуйста, следуйте инструкциям, которые были отправлены на имейл - %email%.'

@@ -24,7 +24,7 @@ Forbidden.: Forbidden.
 'Old password is invalid.': 'Old password is invalid.'
 'User %name% has been registered. Please confirm your email address.': 'User %name% has been registered. Please confirm your email address.'
 'Hello, %name%': 'Hello, %name%'
-'Follow this link to confirm an email: %emailConfirmationUrl%': 'Follow this link to confirm an email: %emailConfirmationUrl%'
+'Follow this link to confirm an email': 'Follow this link to confirm an email'
 'User %name% has been successfully logged-in.': 'User %name% has been successfully logged-in.'
 'Access token for user %name% has been successfully refreshed.': 'Access token for user %name% has been successfully refreshed.'
 'Email change process has been started. Please follow the instructions that were sent to email - %email%.': 'Email change process has been started. Please follow the instructions that were sent to email - %email%.'

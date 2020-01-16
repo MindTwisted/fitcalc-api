@@ -1,2 +1,4 @@
 <h2>{% trans %}Hello, %name%{% endtrans %}</h2>
-<p>{% trans %}Follow this link to confirm an email: %emailConfirmationUrl%{% endtrans %}</p>
+<p><a href="{{ emailConfirmationUrl }}"
+      target="_blank"
+    >{% trans %}Follow this link to confirm an email{% endtrans %}</a></p>

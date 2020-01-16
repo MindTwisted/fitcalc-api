@@ -77,33 +77,19 @@ class AuthController extends AbstractController
      *
      * @param string $hash
      * @param TranslatorInterface $translator
+     * @param UserService $userService
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
      */
-    public function emailConfirmation(string $hash, TranslatorInterface $translator): JsonResponse
+    public function emailConfirmation(
+        string $hash,
+        TranslatorInterface $translator,
+        UserService $userService
+    ): JsonResponse
     {
-        /** @var EmailConfirmationRepository $emailConfirmationRepository */
-        $emailConfirmationRepository = $this->getDoctrine()->getRepository(EmailConfirmation::class);
-        $emailConfirmation = $emailConfirmationRepository->findOneByHashJoinedToUser($hash);
-
-        if (!$emailConfirmation) {
-            return $this->json(
-                ['message' => $translator->trans('Forbidden.')],
-                JsonResponse::HTTP_FORBIDDEN
-            );
-        }
-
-        $user = $emailConfirmation->getUser();
-        $user->setEmail($emailConfirmation->getEmail());
-        $user->setEmailConfirmedAt(new DateTime());
-
-        /** @var EntityManagerInterface $entityManager */
-        $entityManager = $this->getDoctrine()->getManager();
-        $entityManager->persist($user);
-        $entityManager->remove($emailConfirmation);
-        $entityManager->flush();
+        $user = $userService->confirmEmail($hash);
 
         return $this->json(
             [
