@@ -17,7 +17,7 @@ POST /api/products/bulk_upload
 body: array data
 protection: admin
 
-GET /api/eating?user_id={user_id}&date={date}&offset={offset}&limit={limit}(max 100)
+GET /api/eating?user_id={user_id}&date={date}
 protection: user
 notes: user can see only eating with user_id == current_user_id, admin can see all eating
 
