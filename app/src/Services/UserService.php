@@ -18,7 +18,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class UserService
@@ -29,11 +28,6 @@ class UserService
      * @var EntityManagerInterface
      */
     private $entityManager;
-
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
 
     /**
      * @var UserPasswordEncoderInterface
@@ -54,21 +48,18 @@ class UserService
      * UserService constructor.
      *
      * @param EntityManagerInterface $entityManager
-     * @param TranslatorInterface $translator
      * @param UserPasswordEncoderInterface $userPasswordEncoder
      * @param ValidationService $validationService
      * @param EmailService $emailService
      */
     public function __construct(
         EntityManagerInterface $entityManager,
-        TranslatorInterface $translator,
         UserPasswordEncoderInterface $userPasswordEncoder,
         ValidationService $validationService,
         EmailService $emailService
     )
     {
         $this->entityManager = $entityManager;
-        $this->translator = $translator;
         $this->userPasswordEncoder = $userPasswordEncoder;
         $this->validationService = $validationService;
         $this->emailService = $emailService;
@@ -166,10 +157,10 @@ class UserService
 
         try {
             $this->emailService->sendEmailConfirmationMessage($request, $user);
-        } catch (TransportExceptionInterface $exception) {
+        } catch (TransportExceptionInterface $e) {
             throw new HttpException(
                 JsonResponse::HTTP_INTERNAL_SERVER_ERROR,
-                $this->translator->trans('Unexpected error has been occurred, please try again later.')
+                'Unexpected error has been occurred, please try again later.'
             );
         }
 
@@ -196,7 +187,7 @@ class UserService
         if (!$emailConfirmation) {
             throw new HttpException(
                 JsonResponse::HTTP_FORBIDDEN,
-                $this->translator->trans('Forbidden.')
+                'Forbidden.'
             );
         }
 

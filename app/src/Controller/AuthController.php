@@ -2,16 +2,13 @@
 
 namespace App\Controller;
 
-use App\Entity\EmailConfirmation;
+
 use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Exception\ValidationException;
-use App\Repository\EmailConfirmationRepository;
 use App\Repository\RefreshTokenRepository;
 use App\Services\AuthService;
 use App\Services\UserService;
-use DateTime;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;

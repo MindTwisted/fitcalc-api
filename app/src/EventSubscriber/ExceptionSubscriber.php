@@ -8,20 +8,33 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ExceptionSubscriber implements EventSubscriberInterface
 {
-    /** @var ConstraintViolationListNormalizer */
+    /**
+     * @var ConstraintViolationListNormalizer
+     */
     private $constraintViolationListNormalizer;
+
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
     /**
      * ExceptionSubscriber constructor.
      *
      * @param ConstraintViolationListNormalizer $constraintViolationListNormalizer
+     * @param TranslatorInterface $translator
      */
-    public function __construct(ConstraintViolationListNormalizer $constraintViolationListNormalizer)
+    public function __construct(
+        ConstraintViolationListNormalizer $constraintViolationListNormalizer,
+        TranslatorInterface $translator
+    )
     {
         $this->constraintViolationListNormalizer = $constraintViolationListNormalizer;
+        $this->translator = $translator;
     }
 
     /**
@@ -37,7 +50,11 @@ class ExceptionSubscriber implements EventSubscriberInterface
 
         $response = new JsonResponse(
             [
-                'message' => $exception->getMessage()
+                'message' => $this->translator->trans(
+                    $exception->getMessage(),
+                    [],
+                    'messages'
+                )
             ],
             $exception->getStatusCode()
         );

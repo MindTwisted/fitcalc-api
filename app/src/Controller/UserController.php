@@ -183,7 +183,7 @@ class UserController extends AbstractController
     /**
      * @Route("", name="getAllUsers", methods={"GET"})
      *
-     * @IsGranted(User::ROLE_ADMIN, message="Access denied.")
+     * @IsGranted(User::ROLE_ADMIN, message="Forbidden.")
      *
      * @param Request $request
      *

@@ -21,11 +21,6 @@ GET /api/eating?user_id={user_id}&date={date}
 protection: user
 notes: user can see only eating with user_id == current_user_id, admin can see all eating
 
-POST /api/eating
-body: name, occurred_at
-protection: user
-notes: admin can't access this route
-
 PUT /api/eating/{id}
 body: name, occurred_at
 protection: user
@@ -40,12 +35,12 @@ body: product_id, weight
 protection: user
 notes: admin can't access this route
 
-PUT /api/eating/{id}/details
+PUT /api/eating/{id}/details/{id}
 body: product_id, weight
 protection: user
 notes: user can update only eating details of eating with user_id == current_user_id, admin can't access this route
 
-DELETE /api/eating/{id}/details
+DELETE /api/eating/{id}/details/{id}
 protection: user
 notes: user can delete only eating details of eating with user_id == current_user_id, admin can't access this route
 ```

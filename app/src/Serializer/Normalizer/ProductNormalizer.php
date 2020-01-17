@@ -2,10 +2,10 @@
 
 namespace App\Serializer\Normalizer;
 
+
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
-use App\Entity\User;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
@@ -22,26 +22,26 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
     private $productTranslationNormalizer;
 
     /**
-     * @var User
+     * @var Security
      */
-    private $user;
+    private $security;
 
     /**
      * ProductNormalizer constructor.
      *
      * @param UserNormalizer $userNormalizer
      * @param ProductTranslationNormalizer $productTranslationNormalizer
-     * @param TokenStorageInterface $tokenStorage
+     * @param Security $security
      */
     public function __construct(
         UserNormalizer $userNormalizer,
         ProductTranslationNormalizer $productTranslationNormalizer,
-        TokenStorageInterface $tokenStorage
+        Security $security
     )
     {
         $this->userNormalizer = $userNormalizer;
         $this->productTranslationNormalizer = $productTranslationNormalizer;
-        $this->user = $tokenStorage->getToken()->getUser();
+        $this->security = $security;
     }
 
     /**
@@ -66,7 +66,9 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
             $data['user'] = $this->userNormalizer->normalize($object->getUser());
         }
 
-        if ($this->user->isAdmin()) {
+        $user = $this->security->getUser();
+
+        if ($user && $user->isAdmin()) {
             $data['translations'] = $object->getTranslations()->map(
                 function (ProductTranslation $productTranslation) {
                     return $this->productTranslationNormalizer->normalize($productTranslation);

@@ -10,7 +10,7 @@ use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Security;
 
 class ProductService
 {
@@ -25,26 +25,27 @@ class ProductService
     private $validationService;
 
     /**
-     * @var User
+     * @var Security
      */
-    private $user;
+    private $security;
+
 
     /**
      * ProductService constructor.
      *
      * @param EntityManagerInterface $entityManager
      * @param ValidationService $validationService
-     * @param TokenStorageInterface $tokenStorage
+     * @param Security $security
      */
     public function __construct(
         EntityManagerInterface $entityManager,
         ValidationService $validationService,
-        TokenStorageInterface $tokenStorage
+        Security $security
     )
     {
         $this->entityManager = $entityManager;
         $this->validationService = $validationService;
-        $this->user = $tokenStorage->getToken()->getUser();
+        $this->security = $security;
     }
 
     /**
@@ -57,7 +58,8 @@ class ProductService
      */
     public function createOrUpdateProduct(Request $request, ?Product $product = null): Product
     {
-        $product = $this->user->isAdmin() ?
+        $user = $this->security->getUser();
+        $product = $user->isAdmin() ?
             $this->createOrUpdateProductAsAdmin($request, $product) :
             $this->createOrUpdateProductAsUser($request, $product);
 
@@ -75,7 +77,9 @@ class ProductService
      */
     public function getProducts(Request $request): array
     {
-        return $this->user->isAdmin() ?
+        $user = $this->security->getUser();
+
+        return $user->isAdmin() ?
             $this->getProductsAsAdmin($request) :
             $this->getProductsAsUser($request);
     }
@@ -128,10 +132,13 @@ class ProductService
      */
     private function createOrUpdateProductAsUser(Request $request, ?Product $product = null): Product
     {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
         $product = $product ?? new Product();
         $product = $this->fillProductFromRequest($product, $request);
         $product->setLocale($request->getLocale());
-        $product->setUser($this->user);
+        $product->setUser($user);
 
         return $product;
     }
@@ -162,10 +169,11 @@ class ProductService
     {
         /** @var ProductRepository $productRepository */
         $productRepository = $this->entityManager->getRepository(Product::class);
+        $user = $this->security->getUser();
 
         return $productRepository->findWithTranslation(
             $request->get('name', ''),
-            $this->user->isAdmin() ? null : $this->user->getId(),
+            $user->isAdmin() ? null : $user->getId(),
             $request->query->getInt('offset', 0)
         );
     }
@@ -179,10 +187,11 @@ class ProductService
     {
         /** @var ProductRepository $productRepository */
         $productRepository = $this->entityManager->getRepository(Product::class);
+        $user = $this->security->getUser();
 
         return $productRepository->findWithTranslationLocalized(
             $request->get('name', ''),
-            $this->user->isAdmin() ? null : $this->user->getId(),
+            $user->isAdmin() ? null : $user->getId(),
             $request->getLocale(),
             $request->query->getInt('offset', 0)
         );
