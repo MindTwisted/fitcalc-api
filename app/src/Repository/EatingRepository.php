@@ -6,6 +6,9 @@ namespace App\Repository;
 use App\Entity\Eating;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\Query;
+use Gedmo\Translatable\TranslatableListener;
 
 /**
  * @method Eating|null find($id, $lockMode = null, $lockVersion = null)
@@ -20,32 +23,38 @@ class EatingRepository extends ServiceEntityRepository
         parent::__construct($registry, Eating::class);
     }
 
-    // /**
-    //  * @return Eating[] Returns an array of Eating objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?Eating
+    /**
+     * @param int $id
+     * @param string $locale
+     *
+     * @return Eating|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneWithDetailsById(int $id, string $locale = 'en'): ?Eating
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
+            ->leftJoin('e.user', 'u')
+            ->leftJoin('e.eatingDetails', 'ed')
+            ->leftJoin('ed.product', 'p')
+            ->addSelect(['u', 'ed', 'p'])
+            ->andWhere('e.id = :id')
+            ->setParameter('id', $id)
             ->getQuery()
-            ->getOneOrNullResult()
-        ;
+            ->useQueryCache(false)
+            ->setHint(
+                Query::HINT_CUSTOM_OUTPUT_WALKER,
+                'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
+            )
+            ->setHint(
+                TranslatableListener::HINT_TRANSLATABLE_LOCALE,
+                $locale
+            )
+            ->setHint(
+                TranslatableListener::HINT_FALLBACK,
+                1 // fallback to default values in case if record is not translated
+            )
+            ->getOneOrNullResult();
     }
-    */
 }

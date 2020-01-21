@@ -7,6 +7,7 @@ use App\Entity\Eating;
 use App\Exception\ValidationException;
 use App\Security\Voter\EatingVoter;
 use App\Services\EatingService;
+use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -83,6 +84,44 @@ class EatingController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans('Eating has been successfully updated.'),
+            'data' => compact('eating')
+        ]);
+    }
+
+    /**
+     * @Route(
+     *     "/{id}/details",
+     *     requirements={"id"="\d+"},
+     *     name="addEatingDetails",
+     *     methods={"POST"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param Eating $eating
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param EatingService $eatingService
+     *
+     * @return JsonResponse
+     *
+     * @throws ValidationException
+     * @throws NonUniqueResultException
+     */
+    public function addEatingDetails(
+        Eating $eating,
+        Request $request,
+        TranslatorInterface $translator,
+        EatingService $eatingService
+    ): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(EatingVoter::EDIT, $eating);
+
+        $eatingService->createOrUpdateEatingDetail($request, $eating);
+        $eating = $eatingService->getOneWithDetailsById($eating->getId(), $request->getLocale());
+
+        return $this->json([
+            'message' => $translator->trans('Eating detail has been successfully added.'),
             'data' => compact('eating')
         ]);
     }

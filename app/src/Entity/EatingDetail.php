@@ -4,6 +4,7 @@ namespace App\Entity;
 
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\EatingDetailRepository")
@@ -20,17 +21,23 @@ class EatingDetail
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Eating", inversedBy="eatingDetails")
      * @ORM\JoinColumn(nullable=false)
+     *
+     * @Assert\NotNull()
      */
     private $eating;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Product")
      * @ORM\JoinColumn(nullable=false)
+     *
+     * @Assert\NotNull()
      */
     private $product;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned": true})
+     *
+     * @Assert\Positive()
      */
     private $weight;
 

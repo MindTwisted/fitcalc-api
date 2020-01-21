@@ -4,10 +4,15 @@ namespace App\Services;
 
 
 use App\Entity\Eating;
+use App\Entity\EatingDetail;
+use App\Entity\Product;
 use App\Entity\User;
 use App\Exception\ValidationException;
+use App\Repository\EatingRepository;
+use App\Repository\ProductRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
@@ -81,5 +86,54 @@ class EatingService
         $this->entityManager->flush();
 
         return $eating;
+    }
+
+    /**
+     * @param Request $request
+     * @param Eating $eating
+     * @param EatingDetail|null $eatingDetail
+     *
+     * @return EatingDetail
+     *
+     * @throws ValidationException
+     */
+    public function createOrUpdateEatingDetail(
+        Request $request,
+        Eating $eating,
+        ?EatingDetail $eatingDetail = null
+    ): EatingDetail
+    {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->entityManager->getRepository(Product::class);
+        $product = $productRepository->findOneBy([
+            'id' => $request->request->getInt('product_id', 0)
+        ]);
+
+        $eatingDetail = $eatingDetail ?? new EatingDetail();
+        $eatingDetail->setProduct($product);
+        $eatingDetail->setWeight($request->request->getInt('weight', 0));
+        $eatingDetail->setEating($eating);
+
+        $this->validationService->validate($eatingDetail);
+        $this->entityManager->persist($eatingDetail);
+        $this->entityManager->flush();
+
+        return $eatingDetail;
+    }
+
+    /**
+     * @param int $id
+     * @param string $locale
+     *
+     * @return Eating|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function getOneWithDetailsById(int $id, string $locale = 'en'): ?Eating
+    {
+        /** @var EatingRepository $eatingRepository */
+        $eatingRepository = $this->entityManager->getRepository(Eating::class);
+
+        return $eatingRepository->findOneWithDetailsById($id, $locale);
     }
 }
