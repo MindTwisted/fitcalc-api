@@ -145,4 +145,13 @@ class EatingService
         $this->entityManager->remove($eatingDetail);
         $this->entityManager->flush();
     }
+
+    /**
+     * @param Eating $eating
+     */
+    public function deleteEating(Eating $eating): void
+    {
+        $this->entityManager->remove($eating);
+        $this->entityManager->flush();
+    }
 }

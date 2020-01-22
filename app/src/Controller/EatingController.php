@@ -92,6 +92,37 @@ class EatingController extends AbstractController
 
     /**
      * @Route(
+     *     "/{id}",
+     *     requirements={"id"="\d+"},
+     *     name="deleteEating",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param Eating $eating
+     * @param TranslatorInterface $translator
+     * @param EatingService $eatingService
+     *
+     * @return JsonResponse
+     */
+    public function deleteEating(
+        Eating $eating,
+        TranslatorInterface $translator,
+        EatingService $eatingService
+    ): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(EatingVoter::DELETE, $eating);
+
+        $eatingService->deleteEating($eating);
+
+        return $this->json([
+            'message' => $translator->trans('Eating has been successfully deleted.')
+        ]);
+    }
+
+    /**
+     * @Route(
      *     "/{id}/details",
      *     requirements={"id"="\d+"},
      *     name="addEatingDetails",

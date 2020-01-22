@@ -20,8 +20,8 @@ protection: admin
 GET /api/eating?user_id={user_id}&date={date}
 protection: user
 notes: user can see only eating with user_id == current_user_id, admin can see all eating
-
-DELETE /api/eating/{id}
-protection: user
-notes: user can delete only eating with user_id == current_user_id, admin can't access this route
 ```
+
+### ToDo
+
+1) Add fixtures for eating and eating details
