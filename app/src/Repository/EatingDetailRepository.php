@@ -6,6 +6,7 @@ namespace App\Repository;
 use App\Entity\EatingDetail;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\NonUniqueResultException;
 
 /**
  * @method EatingDetail|null find($id, $lockMode = null, $lockVersion = null)
@@ -20,32 +21,24 @@ class EatingDetailRepository extends ServiceEntityRepository
         parent::__construct($registry, EatingDetail::class);
     }
 
-    // /**
-    //  * @return EatingDetail[] Returns an array of EatingDetail objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param int $id
+     * @param int $eatingId
+     *
+     * @return EatingDetail|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneWithEatingByIdAndEatingId(int $id, int $eatingId): ?EatingDetail
     {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
+        return $this->createQueryBuilder('ed')
+            ->leftJoin('ed.eating', 'e')
+            ->addSelect('e')
+            ->andWhere('ed.id = :id')
+            ->setParameter('id', $id)
+            ->andWhere('e.id = :eatingId')
+            ->setParameter('eatingId', $eatingId)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?EatingDetail
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

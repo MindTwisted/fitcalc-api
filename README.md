@@ -25,11 +25,6 @@ DELETE /api/eating/{id}
 protection: user
 notes: user can delete only eating with user_id == current_user_id, admin can't access this route
 
-PUT /api/eating/{id}/details/{id}
-body: product_id, weight
-protection: user
-notes: user can update only eating details of eating with user_id == current_user_id, admin can't access this route
-
 DELETE /api/eating/{id}/details/{id}
 protection: user
 notes: user can delete only eating details of eating with user_id == current_user_id, admin can't access this route

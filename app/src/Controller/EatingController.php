@@ -4,9 +4,11 @@ namespace App\Controller;
 
 
 use App\Entity\Eating;
+use App\Entity\EatingDetail;
 use App\Exception\ValidationException;
 use App\Security\Voter\EatingVoter;
 use App\Services\EatingService;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -122,6 +124,48 @@ class EatingController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans('Eating detail has been successfully added.'),
+            'data' => compact('eating')
+        ]);
+    }
+
+    /**
+     * @Route(
+     *     "/{eating_id}/details/{detail_id}",
+     *     requirements={"eating_id"="\d+", "detail_id"="\d+"},
+     *     name="updateEatingDetails",
+     *     methods={"PUT"}
+     * )
+     *
+     * @Entity("eatingDetail", expr="repository.findOneWithEatingByIdAndEatingId(detail_id, eating_id)")
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param EatingDetail $eatingDetail
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param EatingService $eatingService
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     * @throws ValidationException
+     */
+    public function updateEatingDetails(
+        EatingDetail $eatingDetail,
+        Request $request,
+        TranslatorInterface $translator,
+        EatingService $eatingService
+    ): JsonResponse
+    {
+        $eating = $eatingDetail->getEating();
+
+        $this->denyAccessUnlessGranted(EatingVoter::EDIT, $eating);
+
+        $eatingService->createOrUpdateEatingDetail($request, $eating, $eatingDetail);
+        $eating = $eatingService->getOneWithDetailsById($eating->getId(), $request->getLocale());
+
+        return $this->json([
+            'message' => $translator->trans('Eating detail has been successfully updated.'),
             'data' => compact('eating')
         ]);
     }
