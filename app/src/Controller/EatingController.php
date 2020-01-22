@@ -169,4 +169,45 @@ class EatingController extends AbstractController
             'data' => compact('eating')
         ]);
     }
+
+    /**
+     * @Route(
+     *     "/{eating_id}/details/{detail_id}",
+     *     requirements={"eating_id"="\d+", "detail_id"="\d+"},
+     *     name="deleteEatingDetails",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @Entity("eatingDetail", expr="repository.findOneWithEatingByIdAndEatingId(detail_id, eating_id)")
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param EatingDetail $eatingDetail
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param EatingService $eatingService
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     */
+    public function deleteEatingDetails(
+        EatingDetail $eatingDetail,
+        Request $request,
+        TranslatorInterface $translator,
+        EatingService $eatingService
+    ): JsonResponse
+    {
+        $eating = $eatingDetail->getEating();
+
+        $this->denyAccessUnlessGranted(EatingVoter::EDIT, $eating);
+
+        $eatingService->deleteEatingDetail($eatingDetail);
+        $eating = $eatingService->getOneWithDetailsById($eating->getId(), $request->getLocale());
+
+        return $this->json([
+            'message' => $translator->trans('Eating detail has been successfully deleted.'),
+            'data' => compact('eating')
+        ]);
+    }
 }

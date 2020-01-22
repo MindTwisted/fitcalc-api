@@ -136,4 +136,13 @@ class EatingService
 
         return $eatingRepository->findOneWithDetailsById($id, $locale);
     }
+
+    /**
+     * @param EatingDetail $eatingDetail
+     */
+    public function deleteEatingDetail(EatingDetail $eatingDetail): void
+    {
+        $this->entityManager->remove($eatingDetail);
+        $this->entityManager->flush();
+    }
 }

@@ -24,8 +24,4 @@ notes: user can see only eating with user_id == current_user_id, admin can see a
 DELETE /api/eating/{id}
 protection: user
 notes: user can delete only eating with user_id == current_user_id, admin can't access this route
-
-DELETE /api/eating/{id}/details/{id}
-protection: user
-notes: user can delete only eating details of eating with user_id == current_user_id, admin can't access this route
 ```
