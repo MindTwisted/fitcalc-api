@@ -22,7 +22,7 @@ Forbidden.: Запрещено.
 'Invalid data have been provided.': 'Были предоставлены неверные данные.'
 'User %name% has been successfully updated.': 'Данные пользователя %name% были успешно обновлены.'
 'Old password is invalid.': 'Старый пароль недействителен.'
-'User %name% has been registered. Please confirm your email address.': 'Пользователь %name% был зарегестрирован. Пожалуйста, подтвердите ваш имейл.'
+'User %name% has been registered. Please confirm your email address.': 'Пользователь %name% был зарегистрирован. Пожалуйста, подтвердите ваш имейл.'
 'Hello, %name%': 'Здравствуйте, %name%'
 'Follow this link to confirm an email': 'Пройдите по данной ссылке для подтверждения имейла'
 'User %name% has been successfully logged-in.': 'Пользователь %name% был успешно залогинен.'

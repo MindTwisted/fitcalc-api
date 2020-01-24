@@ -17,9 +17,11 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./app:$APP_ROOT
+      - ./docker/php/uploads.ini:/usr/local/etc/php/conf.d/uploads.ini
     networks:
       - code-network
     environment:
+      APP_ENV: $APP_ENV
       KEYS_PASSPHRASE: $KEYS_PASSPHRASE
       APP_ROOT: $APP_ROOT
       MAILER_DSN: $MAILER_DSN

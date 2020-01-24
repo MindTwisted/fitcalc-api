@@ -8,6 +8,7 @@ use App\Entity\EatingDetail;
 use App\Exception\ValidationException;
 use App\Security\Voter\EatingVoter;
 use App\Services\EatingService;
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -27,6 +28,27 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class EatingController extends AbstractController
 {
+    /**
+     * @Route("", name="getAllEating", methods={"GET"})
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param Request $request
+     * @param EatingService $eatingService
+     *
+     * @return JsonResponse
+     *
+     * @throws Exception
+     */
+    public function getAllEating(Request $request, EatingService $eatingService): JsonResponse
+    {
+        $eating = $eatingService->getAllEatingOfCurrentUser($request);
+
+        return $this->json([
+            'data' => compact('eating')
+        ]);
+    }
+
     /**
      * @Route("", name="addEating", methods={"POST"})
      *

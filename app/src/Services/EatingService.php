@@ -59,6 +59,34 @@ class EatingService
 
     /**
      * @param Request $request
+     *
+     * @return Eating[]
+     *
+     * @throws Exception
+     */
+    public function getAllEatingOfCurrentUser(Request $request): array
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        try {
+            $occurredAt = new DateTime($request->get('occurred_at', 'now'));
+        } catch (Exception $e) {
+            $occurredAt = new DateTime();
+        }
+
+        /** @var EatingRepository $eatingRepository */
+        $eatingRepository = $this->entityManager->getRepository(Eating::class);
+
+        return $eatingRepository->findByUserIdAndOccurredAt(
+            $user->getId(),
+            $occurredAt,
+            $request->getLocale()
+        );
+    }
+
+    /**
+     * @param Request $request
      * @param Eating|null $eating
      *
      * @return Eating

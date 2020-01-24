@@ -11,7 +11,7 @@ use Doctrine\Persistence\ObjectManager;
 
 class EatingFixtures extends BaseFixture implements DependentFixtureInterface
 {
-    const INSTANCES_COUNT = 500;
+    const INSTANCES_COUNT = 5000;
 
     /**
      * @param ObjectManager $manager
@@ -28,7 +28,7 @@ class EatingFixtures extends BaseFixture implements DependentFixtureInterface
 
                 $eating->setName($this->faker->words(2, true));
                 $eating->setUser($user);
-                $eating->setOccurredAt(new DateTime());
+                $eating->setOccurredAt($this->faker->dateTimeBetween('-1 month', 'now'));
             }
         );
 

@@ -11,7 +11,7 @@ use Doctrine\Persistence\ObjectManager;
 
 class EatingDetailFixtures extends BaseFixture implements DependentFixtureInterface
 {
-    const INSTANCES_COUNT = 2500;
+    const INSTANCES_COUNT = 25000;
 
     /**
      * @param ObjectManager $manager
