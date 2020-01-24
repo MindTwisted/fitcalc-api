@@ -4,7 +4,7 @@ namespace App\DataFixtures;
 
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 use Faker\Generator;
 
@@ -40,7 +40,7 @@ abstract class BaseFixture extends Fixture
      * @param ObjectManager $manager
      * @param callable $factory
      */
-    protected function createMany(string $className, int $count, ObjectManager $manager, callable $factory)
+    protected function createMany(string $className, int $count, ObjectManager $manager, callable $factory): void
     {
         for ($i = 0; $i < $count; $i++) {
             $entity = new $className();

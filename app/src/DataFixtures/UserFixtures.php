@@ -6,10 +6,12 @@ namespace App\DataFixtures;
 use App\Entity\User;
 use App\Services\UserService;
 use DateTime;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 
 class UserFixtures extends BaseFixture
 {
+    const INSTANCES_COUNT = 150;
+
     /**
      * @var UserService
      */
@@ -30,18 +32,18 @@ class UserFixtures extends BaseFixture
     /**
      * @param ObjectManager $manager
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $this->createMany(
             User::class,
-            150,
+            self::INSTANCES_COUNT,
             $manager,
             function (User $user, int $i) {
                 $user->setName($this->faker->name);
                 $user->setEmail($this->faker->unique()->email);
                 $user->setEmailConfirmedAt(new DateTime());
                 $user->setRoles([User::ROLE_APP_USER]);
-                $user->setPlainPassword($this->faker->word);
+                $user->setPlainPassword('secret123#');
 
                 $this->userService->encodeUserPassword($user);
             }

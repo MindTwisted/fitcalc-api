@@ -5,18 +5,20 @@ namespace App\DataFixtures;
 
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 
 class ProductFixtures extends BaseFixture
 {
+    const INSTANCES_COUNT = 150;
+
     /**
      * @param ObjectManager $manager
      */
-    public function load(ObjectManager $manager)
+    public function load(ObjectManager $manager): void
     {
         $this->createMany(
             Product::class,
-            150,
+            self::INSTANCES_COUNT,
             $manager,
             function (Product $product, int $i) {
                 $proteins = $this->faker->numberBetween(0, 25);
