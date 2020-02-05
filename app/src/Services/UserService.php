@@ -215,7 +215,7 @@ class UserService
         $user = new User();
         $user->setName($request->get('name', ''));
         $user->setEmail($request->get('email', ''));
-        $user->setPlainPassword($request->get('plainPassword', ''));
+        $user->setPlainPassword($request->get('password', ''));
         $user->setRoles([User::ROLE_APP_USER]);
         $emailConfirmation = new EmailConfirmation();
         $emailConfirmation->setEmail($request->get('email', ''));
