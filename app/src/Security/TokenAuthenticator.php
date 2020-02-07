@@ -175,7 +175,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             [
                 'message' => $this->translator->trans('Authentication failed. Please repeat login procedure.')
             ],
-            JsonResponse::HTTP_FORBIDDEN
+            JsonResponse::HTTP_UNAUTHORIZED
         );
     }
 

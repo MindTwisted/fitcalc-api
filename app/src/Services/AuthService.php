@@ -75,11 +75,11 @@ class AuthService
     /**
      * @param User $user
      *
-     * @return string
+     * @return array
      *
      * @throws Exception
      */
-    public function generateAccessToken(User $user): string
+    public function generateAccessToken(User $user): array
     {
         return $this->jwtService->createTokenFromUser($user);
     }
