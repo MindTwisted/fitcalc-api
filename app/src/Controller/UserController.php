@@ -132,7 +132,7 @@ class UserController extends AbstractController
 
         if (!$token) {
             return $this->json(
-                ['message' => $translator->trans('Please provide a token.')],
+                ['message' => $translator->trans('Please provide a password recovery token.')],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
@@ -143,7 +143,7 @@ class UserController extends AbstractController
 
         if (!$passwordRecovery) {
             return $this->json(
-                ['message' => $translator->trans('Token is invalid.')],
+                ['message' => $translator->trans('Password recovery token is invalid.')],
                 JsonResponse::HTTP_FORBIDDEN
             );
         }
