@@ -60,7 +60,6 @@ class User implements UserInterface
      * @var string
      *
      * @Assert\NotBlank()
-     * @Assert\Length(min="8")
      * @Assert\Regex(
      *     pattern="/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/",
      *     message="Password should contains minimum eight characters, at least one letter, one number and one special character."

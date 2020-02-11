@@ -126,18 +126,9 @@ class UserController extends AbstractController
         TranslatorInterface $translator
     ): JsonResponse
     {
-        $token = $request->get('token');
-
-        if (!$token) {
-            return $this->json(
-                ['message' => $translator->trans('Please provide a password recovery token.')],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
-        }
-
         /** @var PasswordRecoveryRepository $passwordRecoveryRepository */
         $passwordRecoveryRepository = $this->getDoctrine()->getRepository(PasswordRecovery::class);
-        $passwordRecovery = $passwordRecoveryRepository->findOneByTokenJoinedToUser($token);
+        $passwordRecovery = $passwordRecoveryRepository->findOneByTokenJoinedToUser($request->get('token', ''));
 
         if (!$passwordRecovery) {
             return $this->json(
@@ -155,16 +146,7 @@ class UserController extends AbstractController
             );
         }
 
-        $password = $request->get('password');
-
-        if (!$password) {
-            return $this->json(
-                ['message' => $translator->trans('Please provide a password.')],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
-        }
-
-        $user->setPlainPassword($password);
+        $user->setPlainPassword($request->get('password', ''));
 
         $validationService->validate($user);
         $userService->encodeUserPassword($user);
