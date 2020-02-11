@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+
 use App\Entity\EmailConfirmation;
 use App\Entity\PasswordRecovery;
 use App\Entity\User;
 use App\Exception\ValidationException;
+use App\Form\InitiatePasswordRecoveryType;
 use App\Repository\PasswordRecoveryRepository;
 use App\Repository\UserRepository;
 use App\Services\AuthService;
@@ -36,39 +38,35 @@ class UserController extends AbstractController
      * @Route("/initiate_password_recovery", name="initiatePasswordRecovery", methods={"POST"})
      *
      * @param Request $request
+     * @param TranslatorInterface $translator
      * @param UserService $userService
      * @param EmailService $emailService
-     * @param TranslatorInterface $translator
+     * @param ValidationService $validationService
      *
      * @return JsonResponse
      *
      * @throws NonUniqueResultException
+     * @throws ValidationException
      * @throws Exception
      */
     public function initiatePasswordRecovery(
         Request $request,
+        TranslatorInterface $translator,
         UserService $userService,
         EmailService $emailService,
-        TranslatorInterface $translator
+        ValidationService $validationService
     ): JsonResponse
     {
         $email = $request->get('email');
+        $form = $this->createForm(InitiatePasswordRecoveryType::class)->submit(compact('email'));
 
-        if (!$email) {
-            return $this->json(
-                ['message' => $translator->trans('Please provide an email.')],
-                JsonResponse::HTTP_BAD_REQUEST
-            );
-        }
+        $validationService->validateForm($form);
 
         $user = $userService->getUserByEmail($email);
 
         if (!$user) {
             return $this->json(
-                ['message' => $translator->trans(
-                    "Email %email% doesn't exist.",
-                    ['%email%' => $email]
-                )],
+                ['message' => $translator->trans("Email %email% doesn't exist.", ['%email%' => $email])],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
