@@ -33,7 +33,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class UserController extends AbstractController
 {
     /**
-     * @Route("/initiate_password_reset", name="initiatePasswordReset", methods={"POST"})
+     * @Route("/initiate_password_recovery", name="initiatePasswordRecovery", methods={"POST"})
      *
      * @param Request $request
      * @param UserService $userService
@@ -45,7 +45,7 @@ class UserController extends AbstractController
      * @throws NonUniqueResultException
      * @throws Exception
      */
-    public function initiatePasswordReset(
+    public function initiatePasswordRecovery(
         Request $request,
         UserService $userService,
         EmailService $emailService,
@@ -109,7 +109,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/confirm_password_reset", name="confirmPasswordReset", methods={"POST"})
+     * @Route("/confirm_password_recovery", name="confirmPasswordRecovery", methods={"POST"})
      *
      * @param Request $request
      *
@@ -121,7 +121,7 @@ class UserController extends AbstractController
      * @throws NonUniqueResultException
      * @throws ValidationException
      */
-    public function confirmPasswordReset(
+    public function confirmPasswordRecovery(
         Request $request,
         ValidationService $validationService,
         UserService $userService,
