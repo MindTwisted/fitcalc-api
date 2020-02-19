@@ -216,7 +216,7 @@ class UserController extends AbstractController
         }
 
         $user->setName($request->get('name', ''));
-        $user->setPlainPassword($request->get('plainPassword', ''));
+        $user->setPlainPassword($request->get('password', ''));
 
         $validationService->validate($user);
         $userService->encodeUserPassword($user);
