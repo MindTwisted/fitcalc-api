@@ -40,11 +40,13 @@ class ValidationService
     /**
      * @param $entity
      *
+     * @param array $groups
+     *
      * @throws ValidationException
      */
-    public function validate($entity): void
+    public function validate($entity, array $groups = null): void
     {
-        $errors = $this->validator->validate($entity);
+        $errors = $this->validator->validate($entity, null, $groups);
 
         if (count($errors) > 0) {
             $exception = new ValidationException($this->translator->trans('Invalid data have been provided.'));

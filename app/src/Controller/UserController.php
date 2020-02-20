@@ -189,6 +189,45 @@ class UserController extends AbstractController
      *
      * @param Request $request
      * @param TranslatorInterface $translator
+     * @param ValidationService $validationService
+     *
+     * @return JsonResponse
+     *
+     * @throws ValidationException
+     */
+    public function updateCurrentUser(
+        Request $request,
+        TranslatorInterface $translator,
+        ValidationService $validationService
+    ): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $user->setName($request->get('name', ''));
+
+        $validationService->validate($user, [User::GROUP_GENERAL_UPDATE]);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = $this->getDoctrine()->getManager();
+        $entityManager->persist($user);
+        $entityManager->flush();
+
+        return $this->json([
+            'message' => $translator->trans(
+                'User %name% has been successfully updated.',
+                ['%name%' => $user->getName()]
+            ),
+            'data' => compact('user')
+        ]);
+    }
+
+    /**
+     * @Route("/password", name="updateCurrentUserPassword", methods={"PUT"})
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param Request $request
+     * @param TranslatorInterface $translator
      * @param UserService $userService
      * @param AuthService $authService
      * @param ValidationService $validationService
@@ -197,7 +236,7 @@ class UserController extends AbstractController
      *
      * @throws ValidationException
      */
-    public function updateCurrentUser(
+    public function updateCurrentUserPassword(
         Request $request,
         TranslatorInterface $translator,
         UserService $userService,
@@ -208,17 +247,16 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (!$authService->isPasswordValid($user, $request->get('old_password'))) {
+        if (!$authService->isPasswordValid($user, $request->get('current_password'))) {
             return $this->json(
-                ['message' => $translator->trans('Old password is invalid.')],
+                ['message' => $translator->trans('Current password is invalid.')],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }
 
-        $user->setName($request->get('name', ''));
-        $user->setPlainPassword($request->get('password', ''));
+        $user->setPlainPassword($request->get('new_password', ''));
 
-        $validationService->validate($user);
+        $validationService->validate($user, [User::GROUP_PASSWORD_UPDATE]);
         $userService->encodeUserPassword($user);
 
         /** @var EntityManagerInterface $entityManager */
@@ -228,7 +266,7 @@ class UserController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans(
-                'User %name% has been successfully updated.',
+                'Password for user %name% has been successfully updated.',
                 ['%name%' => $user->getName()]
             ),
             'data' => compact('user')
@@ -262,9 +300,9 @@ class UserController extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        if (!$authService->isPasswordValid($user, $request->get('old_password'))) {
+        if (!$authService->isPasswordValid($user, $request->get('current_password'))) {
             return $this->json(
-                ['message' => $translator->trans('Old password is invalid.')],
+                ['message' => $translator->trans('Current password is invalid.')],
                 JsonResponse::HTTP_BAD_REQUEST
             );
         }

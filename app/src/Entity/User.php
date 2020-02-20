@@ -24,6 +24,9 @@ class User implements UserInterface
     const ROLE_APP_USER = 'ROLE_APP_USER';
     const ROLE_ADMIN = 'ROLE_ADMIN';
 
+    const GROUP_GENERAL_UPDATE = 'GROUP_GENERAL_UPDATE';
+    const GROUP_PASSWORD_UPDATE = 'GROUP_PASSWORD_UPDATE';
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -34,15 +37,15 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={User::GROUP_GENERAL_UPDATE})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      *
-     * @Assert\NotBlank()
-     * @Assert\Email()
+     * @Assert\NotBlank(groups={User::GROUP_GENERAL_UPDATE})
+     * @Assert\Email(groups={User::GROUP_GENERAL_UPDATE})
      */
     private $email;
 
@@ -59,10 +62,11 @@ class User implements UserInterface
     /**
      * @var string
      *
-     * @Assert\NotBlank()
+     * @Assert\NotBlank(groups={User::GROUP_PASSWORD_UPDATE})
      * @Assert\Regex(
      *     pattern="/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/",
-     *     message="Password should contains minimum eight characters, at least one letter, one number and one special character."
+     *     message="Password should contains minimum eight characters, at least one letter, one number and one special character.",
+     *     groups={User::GROUP_PASSWORD_UPDATE}
      * )
      */
     private $plainPassword;
