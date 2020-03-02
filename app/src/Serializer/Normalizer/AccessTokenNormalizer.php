@@ -3,11 +3,11 @@
 namespace App\Serializer\Normalizer;
 
 
-use App\Entity\RefreshToken;
+use App\Entity\AccessToken;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class AccessTokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
     /**
      * @var DateTimeNormalizer
@@ -15,7 +15,7 @@ class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMe
     private $dateTimeNormalizer;
 
     /**
-     * RefreshTokenNormalizer constructor.
+     * AccessTokenNormalizer constructor.
      *
      * @param DateTimeNormalizer $dateTimeNormalizer
      */
@@ -25,7 +25,7 @@ class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMe
     }
 
     /**
-     * @param RefreshToken $object
+     * @param AccessToken $object
      * @param null $format
      * @param array $context
      *
@@ -33,19 +33,10 @@ class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMe
      */
     public function normalize($object, $format = null, array $context = []): array
     {
-        $data = [
-            'id' => $object->getId(),
-            'device' => $object->getDevice(),
+        return [
+            'token' => $object->getToken(),
             'expires_at' => $this->dateTimeNormalizer->normalize($object->getExpiresAt())
         ];
-
-        if (isset($context['group']) && $context['group'] === 'login') {
-            $data['token'] = $object->getToken();
-
-            unset($data['device']);
-        }
-
-        return $data;
     }
 
     /**
@@ -56,7 +47,7 @@ class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMe
      */
     public function supportsNormalization($data, $format = null): bool
     {
-        return $data instanceof RefreshToken;
+        return $data instanceof AccessToken;
     }
 
     /**

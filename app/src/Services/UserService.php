@@ -113,7 +113,7 @@ class UserService
     ): RefreshToken
     {
         $tokenTTE = $user->isAdmin() ? $_ENV['REFRESH_TOKEN_ADMIN_TTE'] : $_ENV['REFRESH_TOKEN_USER_TTE'];
-        $expiresAt = new DateTime('now');
+        $expiresAt = new DateTime();
         $expiresAt->modify("+$tokenTTE seconds");
 
         $refreshToken = new RefreshToken();

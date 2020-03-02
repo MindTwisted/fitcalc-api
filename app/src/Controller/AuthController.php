@@ -9,6 +9,7 @@ use App\Exception\ValidationException;
 use App\Repository\RefreshTokenRepository;
 use App\Services\AuthService;
 use App\Services\UserService;
+use DateTime;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -145,20 +146,22 @@ class AuthController extends AbstractController
             $request->server->get('REMOTE_ADDR')
         );
 
-        return $this->json([
-            'message' => $translator->trans(
-                'User %name% has been successfully logged-in.',
-                ['%name%' => $user->getName()]
-            ),
-            'data' => [
-                'access_token' => $accessToken,
-                'refresh_token' => [
-                    'id' => $refreshToken->getId(),
-                    'token' => $refreshToken->getToken(),
-                    'expires_at' => $refreshToken->getExpiresAt()
+        return $this->json(
+            [
+                'message' => $translator->trans(
+                    'User %name% has been successfully logged-in.',
+                    ['%name%' => $user->getName()]
+                ),
+                'data' => [
+                    'access_token' => $accessToken,
+                    'refresh_token' => $refreshToken,
+                    'date' => new DateTime()
                 ]
-            ]
-        ]);
+            ],
+            200,
+            [],
+            ['group' => 'login']
+        );
     }
 
     /**

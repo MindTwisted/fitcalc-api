@@ -3,6 +3,7 @@
 namespace App\Services;
 
 
+use App\Entity\AccessToken;
 use App\Entity\User;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
@@ -75,11 +76,11 @@ class AuthService
     /**
      * @param User $user
      *
-     * @return array
+     * @return AccessToken
      *
      * @throws Exception
      */
-    public function generateAccessToken(User $user): array
+    public function generateAccessToken(User $user): AccessToken
     {
         return $this->jwtService->createTokenFromUser($user);
     }
