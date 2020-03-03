@@ -3,11 +3,13 @@
 namespace App\Serializer\Normalizer;
 
 
-use App\Entity\AccessToken;
+use DateTime;
+use Exception;
+use Lcobucci\JWT\Token;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class AccessTokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class TokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
     /**
      * @var DateTimeNormalizer
@@ -25,17 +27,20 @@ class AccessTokenNormalizer implements NormalizerInterface, CacheableSupportsMet
     }
 
     /**
-     * @param AccessToken $object
+     * @param Token $object
      * @param null $format
      * @param array $context
      *
      * @return array
+     *
+     * @throws Exception
      */
     public function normalize($object, $format = null, array $context = []): array
     {
         return [
-            'token' => $object->getToken(),
-            'expires_at' => $this->dateTimeNormalizer->normalize($object->getExpiresAt())
+            'token' => (string) $object,
+            'expires_at' => $this->dateTimeNormalizer
+                ->normalize((new DateTime())->setTimestamp($object->getClaim('exp')))
         ];
     }
 
@@ -47,7 +52,7 @@ class AccessTokenNormalizer implements NormalizerInterface, CacheableSupportsMet
      */
     public function supportsNormalization($data, $format = null): bool
     {
-        return $data instanceof AccessToken;
+        return $data instanceof Token;
     }
 
     /**

@@ -3,10 +3,10 @@
 namespace App\Services;
 
 
-use App\Entity\AccessToken;
 use App\Entity\User;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use Lcobucci\JWT\Token;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 
@@ -76,11 +76,11 @@ class AuthService
     /**
      * @param User $user
      *
-     * @return AccessToken
+     * @return Token
      *
      * @throws Exception
      */
-    public function generateAccessToken(User $user): AccessToken
+    public function generateAccessToken(User $user): Token
     {
         return $this->jwtService->createTokenFromUser($user);
     }

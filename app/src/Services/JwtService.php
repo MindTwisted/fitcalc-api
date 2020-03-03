@@ -3,9 +3,7 @@
 namespace App\Services;
 
 
-use App\Entity\AccessToken;
 use App\Entity\User;
-use DateTime;
 use Exception;
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
@@ -40,27 +38,24 @@ class JwtService
     /**
      * @param User $user
      *
-     * @return AccessToken
+     * @return Token
      *
      * @throws Exception
      */
-    public function createTokenFromUser(User $user): AccessToken
+    public function createTokenFromUser(User $user): Token
     {
         $signer = new Sha256();
         $privateKey = new Key("file://{$this->privateKeyPath}", $_ENV['KEYS_PASSPHRASE']);
         $time = time();
         $expiresAt = $time + $_ENV['JWT_TTE'];
-        $accessToken = new AccessToken();
-        $accessToken->setToken((string) (new Builder())
+
+        return (new Builder())
             ->identifiedBy(md5(random_bytes(10)), true)
             ->issuedAt($time)
             ->canOnlyBeUsedAfter($time)
             ->expiresAt($expiresAt)
             ->withClaim('user_id', $user->getId())
-            ->getToken($signer, $privateKey));
-        $accessToken->setExpiresAt((new DateTime())->setTimestamp($expiresAt));
-
-        return $accessToken;
+            ->getToken($signer, $privateKey);
     }
 
     /**
