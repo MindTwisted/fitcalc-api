@@ -36,3 +36,5 @@ Forbidden.: Запрещено.
 'Eating detail has been successfully updated.': 'Детали приема пищи были успешно обновлены.'
 'Eating detail has been successfully deleted.': 'Детали приема пищи были успешно удалены.'
 'Access Denied.': 'Доступ запрещен.'
+'Password is valid.': 'Пароль действителен.'
+'Password is invalid.': 'Неправильный пароль.'

@@ -35,11 +35,42 @@ class AuthController extends AbstractController
      *
      * @return JsonResponse
      */
-    public function index()
+    public function auth(): JsonResponse
     {
         $user = $this->getUser();
 
         return $this->json(['data' => compact('user')]);
+    }
+
+    /**
+     * @Route("/verify_password", name="verifyPassword", methods={"POST"})
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param AuthService $authService
+     *
+     * @return JsonResponse
+     */
+    public function verifyPassword(
+        Request $request,
+        TranslatorInterface $translator,
+        AuthService $authService
+    ): JsonResponse
+    {
+        /** @var User $user */
+        $user = $this->getUser();
+        $isPasswordValid = $authService->isPasswordValid($user, $request->get('password'));
+
+        if (!$isPasswordValid) {
+            return $this->json(
+                ['message' => $translator->trans('Password is invalid.')],
+                JsonResponse::HTTP_FORBIDDEN
+            );
+        }
+
+        return $this->json(['message' => $translator->trans('Password is valid.')]);
     }
 
     /**
