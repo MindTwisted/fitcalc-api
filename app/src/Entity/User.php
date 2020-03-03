@@ -10,6 +10,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraint;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
@@ -37,15 +38,15 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255)
      *
-     * @Assert\NotBlank(groups={User::GROUP_GENERAL_UPDATE})
+     * @Assert\NotBlank(groups={Constraint::DEFAULT_GROUP, User::GROUP_GENERAL_UPDATE})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      *
-     * @Assert\NotBlank(groups={User::GROUP_GENERAL_UPDATE})
-     * @Assert\Email(groups={User::GROUP_GENERAL_UPDATE})
+     * @Assert\NotBlank(groups={Constraint::DEFAULT_GROUP, User::GROUP_GENERAL_UPDATE})
+     * @Assert\Email(groups={Constraint::DEFAULT_GROUP, User::GROUP_GENERAL_UPDATE})
      */
     private $email;
 
@@ -62,11 +63,11 @@ class User implements UserInterface
     /**
      * @var string
      *
-     * @Assert\NotBlank(groups={User::GROUP_PASSWORD_UPDATE})
+     * @Assert\NotBlank(groups={Constraint::DEFAULT_GROUP, User::GROUP_PASSWORD_UPDATE})
      * @Assert\Regex(
      *     pattern="/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/",
      *     message="Password should contains minimum eight characters, at least one letter, one number and one special character.",
-     *     groups={User::GROUP_PASSWORD_UPDATE}
+     *     groups={Constraint::DEFAULT_GROUP, User::GROUP_PASSWORD_UPDATE}
      * )
      */
     private $plainPassword;
