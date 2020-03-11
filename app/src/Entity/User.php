@@ -6,6 +6,7 @@ use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\JoinTable;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -95,6 +96,12 @@ class User implements UserInterface
     private $passwordRecoveries;
 
     /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Product", inversedBy="usersWhoAddedProductToFavourites", orphanRemoval=true)
+     * @JoinTable(name="user_favourite_product")
+     */
+    private $favouriteProducts;
+
+    /**
      * User constructor.
      */
     public function __construct()
@@ -102,6 +109,7 @@ class User implements UserInterface
         $this->refreshTokens = new ArrayCollection();
         $this->emailConfirmations = new ArrayCollection();
         $this->passwordRecoveries = new ArrayCollection();
+        $this->favouriteProducts = new ArrayCollection();
     }
 
     /**
@@ -393,6 +401,54 @@ class User implements UserInterface
             if ($passwordRecovery->getUser() === $this) {
                 $passwordRecovery->setUser(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Product[]
+     */
+    public function getFavouriteProducts(): Collection
+    {
+        return $this->favouriteProducts;
+    }
+
+    /**
+     * @param Product $favouriteProduct
+     *
+     * @return $this
+     */
+    public function addFavouriteProduct(Product $favouriteProduct): self
+    {
+        if (!$this->favouriteProducts->contains($favouriteProduct)) {
+            $this->favouriteProducts[] = $favouriteProduct;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param Product $favouriteProduct
+     *
+     * @return $this
+     */
+    public function addFavouriteProductHard(Product $favouriteProduct): self
+    {
+        $this->favouriteProducts[] = $favouriteProduct;
+
+        return $this;
+    }
+
+    /**
+     * @param Product $favouriteProduct
+     *
+     * @return $this
+     */
+    public function removeFavouriteProduct(Product $favouriteProduct): self
+    {
+        if ($this->favouriteProducts->contains($favouriteProduct)) {
+            $this->favouriteProducts->removeElement($favouriteProduct);
         }
 
         return $this;

@@ -6,6 +6,7 @@ namespace App\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\ORM\Mapping\JoinTable;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Translatable\Translatable;
@@ -96,11 +97,18 @@ class Product implements Translatable
     private $locale;
 
     /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="favouriteProducts", orphanRemoval=true)
+     * @JoinTable(name="user_favourite_product")
+     */
+    private $usersWhoAddedProductToFavourites;
+
+    /**
      * Product constructor.
      */
     public function __construct()
     {
         $this->translations = new ArrayCollection();
+        $this->usersWhoAddedProductToFavourites = new ArrayCollection();
     }
 
     /**
@@ -259,6 +267,34 @@ class Product implements Translatable
     public function setLocale(string $locale): self
     {
         $this->locale = $locale;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|User[]
+     */
+    public function getUsersWhoAddedProductToFavourites(): Collection
+    {
+        return $this->usersWhoAddedProductToFavourites;
+    }
+
+    public function addUsersWhoAddedProductToFavourite(User $usersWhoAddedProductToFavourite): self
+    {
+        if (!$this->usersWhoAddedProductToFavourites->contains($usersWhoAddedProductToFavourite)) {
+            $this->usersWhoAddedProductToFavourites[] = $usersWhoAddedProductToFavourite;
+            $usersWhoAddedProductToFavourite->addFavouriteProduct($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUsersWhoAddedProductToFavourite(User $usersWhoAddedProductToFavourite): self
+    {
+        if ($this->usersWhoAddedProductToFavourites->contains($usersWhoAddedProductToFavourite)) {
+            $this->usersWhoAddedProductToFavourites->removeElement($usersWhoAddedProductToFavourite);
+            $usersWhoAddedProductToFavourite->removeFavouriteProduct($this);
+        }
 
         return $this;
     }

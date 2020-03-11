@@ -4,6 +4,7 @@ namespace App\Repository;
 
 
 use App\Entity\Product;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\NonUniqueResultException;
@@ -60,7 +61,7 @@ class ProductRepository extends ServiceEntityRepository
         }
 
         $query = $query->orderBy('p.updatedAt', 'DESC')
-            ->setFirstResult( $offset )
+            ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
             ->useQueryCache(false)
@@ -110,7 +111,7 @@ class ProductRepository extends ServiceEntityRepository
         }
 
         $query = $query->orderBy('p.updatedAt', 'DESC')
-            ->setFirstResult( $offset )
+            ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
             ->useQueryCache(false)
@@ -141,6 +142,37 @@ class ProductRepository extends ServiceEntityRepository
             ->addSelect('t')
             ->andWhere('p.id = :id')
             ->setParameter('id', $id)
+            ->getQuery()
+            ->useQueryCache(false)
+            ->setHint(
+                Query::HINT_CUSTOM_OUTPUT_WALKER,
+                'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
+            )
+            ->setHint(
+                TranslatableListener::HINT_FALLBACK,
+                1 // fallback to default values in case if record is not translated
+            )
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * @param int $id
+     * @param int $userId
+     *
+     * @return Product|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneFavouriteWithTranslationByIdAndUserId(int $id, int $userId): ?Product
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.usersWhoAddedProductToFavourites', 'u')
+            ->leftJoin('p.translations', 't')
+            ->addSelect('t')
+            ->andWhere('p.id = :id')
+            ->setParameter('id', $id)
+            ->andWhere('u.id = :userId')
+            ->setParameter('userId', $userId)
             ->getQuery()
             ->useQueryCache(false)
             ->setHint(

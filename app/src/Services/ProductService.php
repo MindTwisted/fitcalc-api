@@ -9,8 +9,12 @@ use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\NonUniqueResultException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductService
 {
@@ -18,6 +22,11 @@ class ProductService
      * @var EntityManagerInterface
      */
     private $entityManager;
+
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
 
     /**
      * @var ValidationService
@@ -34,16 +43,19 @@ class ProductService
      * ProductService constructor.
      *
      * @param EntityManagerInterface $entityManager
+     * @param TranslatorInterface $translator
      * @param ValidationService $validationService
      * @param Security $security
      */
     public function __construct(
         EntityManagerInterface $entityManager,
+        TranslatorInterface $translator,
         ValidationService $validationService,
         Security $security
     )
     {
         $this->entityManager = $entityManager;
+        $this->translator = $translator;
         $this->validationService = $validationService;
         $this->security = $security;
     }
@@ -90,6 +102,35 @@ class ProductService
     public function deleteProduct(Product $product): void
     {
         $this->entityManager->remove($product);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @param Product $product
+     *
+     * @throws NonUniqueResultException
+     */
+    public function addFavouriteProduct(Product $product): void
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->entityManager->getRepository(Product::class);
+        $favouriteProduct = $productRepository->findOneFavouriteWithTranslationByIdAndUserId(
+            $product->getId(),
+            $user->getId()
+        );
+
+        if ($favouriteProduct) {
+            throw new HttpException(
+                JsonResponse::HTTP_BAD_REQUEST,
+                $this->translator->trans('This product has already been added to favourites.')
+            );
+        }
+
+        $user->addFavouriteProductHard($product);
+
         $this->entityManager->flush();
     }
 
