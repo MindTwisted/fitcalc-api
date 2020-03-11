@@ -96,7 +96,7 @@ class User implements UserInterface
     private $passwordRecoveries;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\Product", inversedBy="usersWhoAddedProductToFavourites", orphanRemoval=true)
+     * @ORM\ManyToMany(targetEntity="App\Entity\Product", inversedBy="usersWhoAddedProductToFavourites")
      * @JoinTable(name="user_favourite_product")
      */
     private $favouriteProducts;
@@ -450,6 +450,18 @@ class User implements UserInterface
         if ($this->favouriteProducts->contains($favouriteProduct)) {
             $this->favouriteProducts->removeElement($favouriteProduct);
         }
+
+        return $this;
+    }
+
+    /**
+     * @param Product $favouriteProduct
+     *
+     * @return $this
+     */
+    public function removeFavouriteProductHard(Product $favouriteProduct): self
+    {
+        $this->favouriteProducts->removeElement($favouriteProduct);
 
         return $this;
     }

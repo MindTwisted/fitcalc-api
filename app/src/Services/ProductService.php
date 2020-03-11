@@ -135,6 +135,35 @@ class ProductService
     }
 
     /**
+     * @param Product $product
+     *
+     * @throws NonUniqueResultException
+     */
+    public function deleteFavouriteProduct(Product $product): void
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->entityManager->getRepository(Product::class);
+        $favouriteProduct = $productRepository->findOneFavouriteWithTranslationByIdAndUserId(
+            $product->getId(),
+            $user->getId()
+        );
+
+        if (!$favouriteProduct) {
+            throw new HttpException(
+                JsonResponse::HTTP_BAD_REQUEST,
+                $this->translator->trans('This product has not been added to favourites.')
+            );
+        }
+
+        $user->removeFavouriteProductHard($product);
+
+        $this->entityManager->flush();
+    }
+
+    /**
      * @param Request $request
      * @param Product|null $product
      *

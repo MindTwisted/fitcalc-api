@@ -203,4 +203,46 @@ class ProductController extends AbstractController
             'message' => $translator->trans('Product has been successfully added to favourites.')
         ]);
     }
+
+    /**
+     * @Route(
+     *     "/{id}/favourites",
+     *     requirements={"id"="\d+"},
+     *     name="deleteFavouriteProduct",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param int $id
+     * @param TranslatorInterface $translator
+     * @param ProductService $productService
+     *
+     * @return JsonResponse
+     *
+     * @throws NonUniqueResultException
+     */
+    public function deleteFavouriteProduct(
+        int $id,
+        TranslatorInterface $translator,
+        ProductService $productService
+    ): JsonResponse
+    {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->getDoctrine()->getRepository(Product::class);
+        $product = $productRepository->findOneWithTranslationById($id);
+
+        if (!$product) {
+            return $this->json(
+                ['message' => $translator->trans('Not found.')],
+                JsonResponse::HTTP_NOT_FOUND
+            );
+        }
+
+        $productService->deleteFavouriteProduct($product);
+
+        return $this->json([
+            'message' => $translator->trans('Product has been successfully deleted from favourites.')
+        ]);
+    }
 }

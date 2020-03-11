@@ -40,3 +40,5 @@ Forbidden.: Forbidden.
 'Password is invalid.': 'Password is invalid.'
 'This product has already been added to favourites.': 'This product has already been added to favourites.'
 'Product has been successfully added to favourites.': 'Product has been successfully added to favourites.'
+'This product has not been added to favourites.': 'This product has not been added to favourites.'
+'Product has been successfully deleted from favourites.': 'Product has been successfully deleted from favourites.'

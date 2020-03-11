@@ -97,7 +97,7 @@ class Product implements Translatable
     private $locale;
 
     /**
-     * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="favouriteProducts", orphanRemoval=true)
+     * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="favouriteProducts")
      * @JoinTable(name="user_favourite_product")
      */
     private $usersWhoAddedProductToFavourites;

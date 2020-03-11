@@ -40,3 +40,5 @@ Forbidden.: Запрещено.
 'Password is invalid.': 'Неправильный пароль.'
 'This product has already been added to favourites.': 'Этот продукт уже был добавлен в избранное.'
 'Product has been successfully added to favourites.': 'Продукт был успешно добавлен в избранное.'
+'This product has not been added to favourites.': 'Этот продукт не был добавлен в избранное.'
+'Product has been successfully deleted from favourites.': 'Продукт был успешно удален из избранного.'
