@@ -120,6 +120,16 @@ class Product implements Translatable
     }
 
     /**
+     * @param User $user
+     *
+     * @return bool
+     */
+    public function isAddedToFavouritesByUser(User $user): bool
+    {
+        return $this->usersWhoAddedProductToFavourites->contains($user);
+    }
+
+    /**
      * @return int|null
      */
     public function getId(): ?int

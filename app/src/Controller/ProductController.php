@@ -9,6 +9,7 @@ use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
 use App\Security\Voter\FavouriteProductVoter;
 use App\Security\Voter\ProductVoter;
+use App\Serializer\Normalizer\ProductNormalizer;
 use App\Services\ProductService;
 use Doctrine\ORM\NonUniqueResultException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -41,7 +42,16 @@ class ProductController extends AbstractController
     {
         $products = $productService->getProducts($request);
 
-        return $this->json(['data' => compact('products')]);
+        return $this->json(
+            [
+                'data' => compact('products')
+            ],
+            200,
+            [],
+            [
+                'groups' => [ProductNormalizer::GROUP_PRODUCT_WITH_FAVOURITES]
+            ]
+        );
     }
 
     /**

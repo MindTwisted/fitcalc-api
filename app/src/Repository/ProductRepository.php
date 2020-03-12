@@ -39,7 +39,7 @@ class ProductRepository extends ServiceEntityRepository
      *
      * @return array
      */
-    public function findWithTranslationLocalized(
+    public function findWithTranslationAndWithFavouritesLocalized(
         string $name = '',
         ?int $userId = null,
         string $locale = 'en',
@@ -48,8 +48,9 @@ class ProductRepository extends ServiceEntityRepository
     ): array
     {
         $query = $this->createQueryBuilder('p')
+            ->leftJoin('p.usersWhoAddedProductToFavourites', 'u')
             ->leftJoin('p.translations', 't')
-            ->addSelect('t')
+            ->addSelect(['t', 'u'])
             ->andWhere('p.name LIKE :name')
             ->setParameter('name', "%$name%");
 

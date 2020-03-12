@@ -277,7 +277,7 @@ class ProductService
         $productRepository = $this->entityManager->getRepository(Product::class);
         $user = $this->security->getUser();
 
-        return $productRepository->findWithTranslationLocalized(
+        return $productRepository->findWithTranslationAndWithFavouritesLocalized(
             $request->get('name', ''),
             $user->isAdmin() ? null : $user->getId(),
             $request->getLocale(),

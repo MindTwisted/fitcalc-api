@@ -5,12 +5,15 @@ namespace App\Serializer\Normalizer;
 
 use App\Entity\Product;
 use App\Entity\ProductTranslation;
+use App\Entity\User;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
+    const GROUP_PRODUCT_WITH_FAVOURITES = 'GROUP_PRODUCT_WITH_FAVOURITES';
+
     /**
      * @var UserNormalizer
      */
@@ -67,6 +70,7 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
             $data['user'] = $this->userNormalizer->normalize($object->getUser());
         }
 
+        /** @var User $user */
         $user = $this->security->getUser();
 
         if ($user && $user->isAdmin()) {
@@ -75,6 +79,10 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
                     return $this->productTranslationNormalizer->normalize($productTranslation);
                 }
             )->toArray();
+        }
+
+        if (isset($context['groups']) && in_array(self::GROUP_PRODUCT_WITH_FAVOURITES, $context['groups'], true)) {
+            $data['inFavourites'] = $object->isAddedToFavouritesByUser($user);
         }
 
         return $data;

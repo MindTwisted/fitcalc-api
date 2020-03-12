@@ -9,6 +9,8 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
+    const GROUP_LOGIN = 'GROUP_LOGIN';
+
     /**
      * @var DateTimeNormalizer
      */
@@ -39,7 +41,7 @@ class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMe
             'expires_at' => $this->dateTimeNormalizer->normalize($object->getExpiresAt())
         ];
 
-        if (isset($context['group']) && $context['group'] === 'login') {
+        if (isset($context['groups']) && in_array(self::GROUP_LOGIN, $context['groups'], true)) {
             $data['token'] = $object->getToken();
 
             unset($data['device']);

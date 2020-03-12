@@ -7,6 +7,7 @@ use App\Entity\RefreshToken;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\RefreshTokenRepository;
+use App\Serializer\Normalizer\RefreshTokenNormalizer;
 use App\Services\AuthService;
 use App\Services\UserService;
 use DateTime;
@@ -191,7 +192,9 @@ class AuthController extends AbstractController
             ],
             200,
             [],
-            ['group' => 'login']
+            [
+                'groups' => [RefreshTokenNormalizer::GROUP_LOGIN]
+            ]
         );
     }
 
