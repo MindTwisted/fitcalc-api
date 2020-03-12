@@ -106,6 +106,24 @@ class ProductService
     }
 
     /**
+     * @param Request $request
+     *
+     * @return array
+     */
+    public function getFavouriteProducts(Request $request): array
+    {
+        /** @var ProductRepository $productRepository */
+        $productRepository = $this->entityManager->getRepository(Product::class);
+        $user = $this->security->getUser();
+
+        return $productRepository->findFavouriteWithTranslationLocalizedByUserId(
+            $user->getId(),
+            $request->getLocale(),
+            $request->query->getInt('offset', 0)
+        );
+    }
+
+    /**
      * @param Product $product
      *
      * @throws NonUniqueResultException

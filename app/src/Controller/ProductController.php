@@ -7,6 +7,7 @@ use App\Entity\Product;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\ProductRepository;
+use App\Security\Voter\FavouriteProductVoter;
 use App\Security\Voter\ProductVoter;
 use App\Services\ProductService;
 use Doctrine\ORM\NonUniqueResultException;
@@ -26,6 +27,23 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class ProductController extends AbstractController
 {
+    /**
+     * @Route("", name="getAllProducts", methods={"GET"})
+     *
+     * @IsGranted(User::ROLE_USER)
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     *
+     * @return JsonResponse
+     */
+    public function getAllProducts(Request $request, ProductService $productService): JsonResponse
+    {
+        $products = $productService->getProducts($request);
+
+        return $this->json(['data' => compact('products')]);
+    }
+
     /**
      * @Route("", name="addProduct", methods={"POST"})
      *
@@ -51,23 +69,6 @@ class ProductController extends AbstractController
             'message' => $translator->trans('Product has been successfully added.'),
             'data' => compact('product')
         ]);
-    }
-
-    /**
-     * @Route("", name="getAllProducts", methods={"GET"})
-     *
-     * @IsGranted(User::ROLE_USER)
-     *
-     * @param Request $request
-     * @param ProductService $productService
-     *
-     * @return JsonResponse
-     */
-    public function getAllProducts(Request $request, ProductService $productService): JsonResponse
-    {
-        $products = $productService->getProducts($request);
-
-        return $this->json(['data' => compact('products')]);
     }
 
     /**
@@ -164,6 +165,29 @@ class ProductController extends AbstractController
 
     /**
      * @Route(
+     *     "/favourites",
+     *     name="getAllFavouriteProducts",
+     *     methods={"GET"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param Request $request
+     * @param ProductService $productService
+     *
+     * @return JsonResponse
+     */
+    public function getAllFavouriteProducts(Request $request, ProductService $productService): JsonResponse
+    {
+        $favouriteProducts = $productService->getFavouriteProducts($request);
+
+        return $this->json([
+            'data' => ['products' => $favouriteProducts]
+        ]);
+    }
+
+    /**
+     * @Route(
      *     "/{id}/favourites",
      *     requirements={"id"="\d+"},
      *     name="addFavouriteProduct",
@@ -196,6 +220,8 @@ class ProductController extends AbstractController
                 JsonResponse::HTTP_NOT_FOUND
             );
         }
+
+        $this->denyAccessUnlessGranted(FavouriteProductVoter::EDIT, $product);
 
         $productService->addFavouriteProduct($product);
 
@@ -238,6 +264,8 @@ class ProductController extends AbstractController
                 JsonResponse::HTTP_NOT_FOUND
             );
         }
+
+        $this->denyAccessUnlessGranted(FavouriteProductVoter::DELETE, $product);
 
         $productService->deleteFavouriteProduct($product);
 

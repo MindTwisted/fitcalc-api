@@ -185,4 +185,53 @@ class ProductRepository extends ServiceEntityRepository
             )
             ->getOneOrNullResult();
     }
+
+    /**
+     * @param int $userId
+     * @param string $locale
+     * @param int $offset
+     * @param int $limit
+     *
+     * @return array
+     */
+    public function findFavouriteWithTranslationLocalizedByUserId(
+        int $userId,
+        string $locale = 'en',
+        int $offset = 0,
+        int $limit = 50
+    ): array
+    {
+        $query = $this->createQueryBuilder('p')
+            ->leftJoin('p.usersWhoAddedProductToFavourites', 'u')
+            ->leftJoin('p.translations', 't')
+            ->addSelect('t')
+            ->andWhere('u.id = :userId')
+            ->setParameter('userId', $userId);
+
+        $query = $query->andWhere($query->expr()->orX(
+            $query->expr()->isNull('p.user'),
+            $query->expr()->eq('p.user', $userId)
+        ));
+
+        $query = $query->orderBy('p.updatedAt', 'DESC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->useQueryCache(false)
+            ->setHint(
+                Query::HINT_CUSTOM_OUTPUT_WALKER,
+                'Gedmo\\Translatable\\Query\\TreeWalker\\TranslationWalker'
+            )
+            ->setHint(
+                TranslatableListener::HINT_TRANSLATABLE_LOCALE,
+                $locale
+            )
+            ->setHint(
+                TranslatableListener::HINT_FALLBACK,
+                1 // fallback to default values in case if record is not translated
+            )
+            ->getResult();
+
+        return $query;
+    }
 }
