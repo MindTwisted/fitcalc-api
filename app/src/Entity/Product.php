@@ -70,10 +70,18 @@ class Product implements Translatable
     private $carbohydrates;
 
     /**
+     * @ORM\Column(type="float")
+     *
+     * @Assert\NotBlank()
+     * @Assert\Range(min="0", max="100")
+     */
+    private $fiber;
+
+    /**
      * @ORM\Column(type="smallint")
      *
      * @Assert\NotBlank()
-     * @Assert\Range(min="0", max="1000")
+     * @Assert\Range(min="0", max="900")
      */
     private $calories;
 
@@ -295,6 +303,18 @@ class Product implements Translatable
             $this->usersWhoAddedProductToFavourites->removeElement($usersWhoAddedProductToFavourite);
             $usersWhoAddedProductToFavourite->removeFavouriteProduct($this);
         }
+
+        return $this;
+    }
+
+    public function getFiber(): ?float
+    {
+        return $this->fiber;
+    }
+
+    public function setFiber(float $fiber): self
+    {
+        $this->fiber = $fiber;
 
         return $this;
     }

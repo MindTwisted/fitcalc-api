@@ -23,13 +23,15 @@ class ProductFixtures extends BaseFixture
             function (Product $product, int $i) {
                 $proteins = $this->faker->numberBetween(0, 25);
                 $fats = $this->faker->numberBetween(0, 25);
-                $carbohydrates = $this->faker->numberBetween(0, 50);
-                $calories = ($proteins * 4) + ($fats * 10) + ($carbohydrates * 4);
+                $carbohydrates = $this->faker->numberBetween(0, 40);
+                $fiber = $this->faker->numberBetween(0, 10);
+                $calories = ($proteins * 4) + ($fats * 9) + ($carbohydrates * 4);
 
                 $product->setName($this->faker->unique()->words(3, true));
                 $product->setProteins($proteins);
                 $product->setFats($fats);
                 $product->setCarbohydrates($carbohydrates);
+                $product->setFiber($fiber);
                 $product->setCalories($calories);
                 $product->setLocale('en');
                 $product->addTranslation(
