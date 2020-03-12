@@ -59,6 +59,7 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
             'proteins' => $object->getProteins(),
             'fats' => $object->getFats(),
             'carbohydrates' => $object->getCarbohydrates(),
+            'fiber' => $object->getFiber(),
             'calories' => $object->getCalories()
         ];
 
