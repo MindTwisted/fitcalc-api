@@ -61,7 +61,7 @@ class ProductRepository extends ServiceEntityRepository
             ));
         }
 
-        $query = $query->orderBy('p.updatedAt', 'DESC')
+        $query = $query->orderBy('p.id', 'DESC')
             ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
