@@ -243,6 +243,7 @@ class ProductService
         $product->setProteins(floatval($request->get('proteins')));
         $product->setCarbohydrates(floatval($request->get('carbohydrates')));
         $product->setFats(floatval($request->get('fats')));
+        $product->setFiber(floatval($request->get('fiber')));
         $product->setCalories($request->request->getInt('calories'));
 
         return $product;
