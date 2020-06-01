@@ -9,10 +9,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class EatingDetailNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
-    /**
-     * @var ProductNormalizer
-     */
-    private $productNormalizer;
+    private ProductNormalizer $productNormalizer;
 
     /**
      * EatingDetailNormalizer constructor.

@@ -23,13 +23,13 @@ class EmailConfirmation
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="emailConfirmations")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $user;
+    private ?User $user;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
@@ -37,12 +37,12 @@ class EmailConfirmation
      * @Assert\NotBlank()
      * @Assert\Email()
      */
-    private $email;
+    private ?string $email;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    private $hash;
+    private ?string $hash = null;
 
     /**
      * @ORM\PrePersist()

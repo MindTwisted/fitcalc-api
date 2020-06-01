@@ -20,10 +20,7 @@ class TaskRemoveExpiredAndSoftDeletedRefreshTokensCommand extends Command
 
     protected static $defaultName = 'task:remove-expired-and-soft-deleted-refresh-tokens';
 
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
     /**
      * TaskRemoveUsersWithNotConfirmedEmailsCommand constructor.

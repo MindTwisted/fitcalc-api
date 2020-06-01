@@ -19,20 +19,9 @@ class AdminCreateCommand extends Command
 {
     protected static $defaultName = 'admin:create';
 
-    /**
-     * @var ValidationService
-     */
-    private $validationService;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var UserService
-     */
-    private $userService;
+    private ValidationService $validationService;
+    private EntityManagerInterface $entityManager;
+    private UserService $userService;
 
     /**
      * AdminCreateCommand constructor.

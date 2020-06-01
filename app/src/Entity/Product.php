@@ -27,12 +27,12 @@ class Product implements Translatable
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      */
-    private $user;
+    private ?User $user;
 
     /**
      * @Gedmo\Translatable
@@ -43,7 +43,7 @@ class Product implements Translatable
      * @Assert\Length(min="5")
      *
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\Column(type="float")
@@ -51,7 +51,7 @@ class Product implements Translatable
      * @Assert\NotBlank()
      * @Assert\Range(min="0", max="100")
      */
-    private $proteins;
+    private ?float $proteins;
 
     /**
      * @ORM\Column(type="float")
@@ -59,7 +59,7 @@ class Product implements Translatable
      * @Assert\NotBlank()
      * @Assert\Range(min="0", max="100")
      */
-    private $fats;
+    private ?float $fats;
 
     /**
      * @ORM\Column(type="float")
@@ -67,7 +67,7 @@ class Product implements Translatable
      * @Assert\NotBlank()
      * @Assert\Range(min="0", max="100")
      */
-    private $carbohydrates;
+    private ?float $carbohydrates;
 
     /**
      * @ORM\Column(type="float")
@@ -75,7 +75,7 @@ class Product implements Translatable
      * @Assert\NotBlank()
      * @Assert\Range(min="0", max="100")
      */
-    private $fiber;
+    private ?float $fiber;
 
     /**
      * @ORM\Column(type="smallint")
@@ -83,7 +83,7 @@ class Product implements Translatable
      * @Assert\NotBlank()
      * @Assert\Range(min="0", max="900")
      */
-    private $calories;
+    private ?int $calories;
 
     /**
      * @ORM\OneToMany(
@@ -94,7 +94,7 @@ class Product implements Translatable
      *
      * @Assert\Valid()
      */
-    private $translations;
+    private Collection $translations;
 
     /**
      * @Gedmo\Locale
@@ -102,13 +102,13 @@ class Product implements Translatable
      * Used locale to override Translation listener`s locale
      * this is not a mapped field of entity metadata, just a simple property
      */
-    private $locale;
+    private ?string $locale = null;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\User", mappedBy="favouriteProducts")
      * @JoinTable(name="user_favourite_product")
      */
-    private $usersWhoAddedProductToFavourites;
+    private Collection $usersWhoAddedProductToFavourites;
 
     /**
      * Product constructor.

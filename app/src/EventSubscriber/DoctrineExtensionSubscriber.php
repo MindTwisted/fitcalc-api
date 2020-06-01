@@ -13,7 +13,7 @@ class DoctrineExtensionSubscriber implements EventSubscriberInterface
     /**
      * @var TranslatableListener
      */
-    private $translatableListener;
+    private TranslatableListener $translatableListener;
 
     /**
      * DoctrineExtensionSubscriber constructor.

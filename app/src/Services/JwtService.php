@@ -16,15 +16,8 @@ use Throwable;
 
 class JwtService
 {
-    /**
-     * @var string
-     */
-    private $privateKeyPath;
-
-    /**
-     * @var string
-     */
-    private $publicKeyPath;
+    private string $privateKeyPath;
+    private string $publicKeyPath;
 
     /**
      * JwtService constructor.

@@ -15,15 +15,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ValidationService
 {
-    /**
-     * @var ValidatorInterface
-     */
-    private $validator;
-
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
+    private ValidatorInterface $validator;
+    private TranslatorInterface $translator;
 
     /**
      * ValidationService constructor.

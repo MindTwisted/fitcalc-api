@@ -1,4 +1,4 @@
-FROM php:7.3-fpm-stretch
+FROM php:7.4-fpm
 
 RUN apt-get -y update && \
     apt-get install -y git zip unzip libicu-dev libxslt-dev

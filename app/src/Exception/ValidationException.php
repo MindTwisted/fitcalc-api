@@ -9,7 +9,7 @@ use Symfony\Component\Validator\ConstraintViolationListInterface;
 class ValidationException extends Exception
 {
     /** @var ConstraintViolationListInterface */
-    private $violations;
+    private ConstraintViolationListInterface $violations;
 
     /**
      * @return ConstraintViolationListInterface

@@ -14,20 +14,9 @@ class ProductNormalizer implements NormalizerInterface, CacheableSupportsMethodI
 {
     const GROUP_PRODUCT_WITH_FAVOURITES = 'GROUP_PRODUCT_WITH_FAVOURITES';
 
-    /**
-     * @var UserNormalizer
-     */
-    private $userNormalizer;
-
-    /**
-     * @var ProductTranslationNormalizer
-     */
-    private $productTranslationNormalizer;
-
-    /**
-     * @var Security
-     */
-    private $security;
+    private UserNormalizer $userNormalizer;
+    private ProductTranslationNormalizer $productTranslationNormalizer;
+    private Security $security;
 
     /**
      * ProductNormalizer constructor.

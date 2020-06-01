@@ -10,15 +10,8 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class EatingNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
-    /**
-     * @var UserNormalizer
-     */
-    private $userNormalizer;
-
-    /**
-     * @var EatingDetailNormalizer
-     */
-    private $eatingDetailNormalizer;
+    private UserNormalizer $userNormalizer;
+    private EatingDetailNormalizer $eatingDetailNormalizer;
 
     /**
      * EatingNormalizer constructor.

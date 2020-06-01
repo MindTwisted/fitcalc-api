@@ -25,35 +25,35 @@ class RefreshToken
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="refreshTokens")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $user;
+    private ?User $user;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      */
-    private $token;
+    private ?string $token;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $device;
+    private ?string $device;
 
     /**
      * @ORM\Column(type="string", length=15)
      *
      * @Assert\Ip
      */
-    private $ipAddress;
+    private ?string $ipAddress;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $expiresAt;
+    private ?DateTimeInterface $expiresAt;
 
     /**
      * @return int|null

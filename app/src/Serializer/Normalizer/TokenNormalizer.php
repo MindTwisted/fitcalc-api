@@ -11,10 +11,7 @@ use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class TokenNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
 {
-    /**
-     * @var DateTimeNormalizer
-     */
-    private $dateTimeNormalizer;
+    private DateTimeNormalizer $dateTimeNormalizer;
 
     /**
      * AccessTokenNormalizer constructor.

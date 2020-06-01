@@ -22,13 +22,13 @@ class Eating
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User")
      * @ORM\JoinColumn(nullable=false)
      */
-    private $user;
+    private ?User $user;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -36,17 +36,17 @@ class Eating
      * @Assert\NotBlank()
      * @Assert\Length(min="3")
      */
-    private $name;
+    private ?string $name;
 
     /**
      * @ORM\Column(type="datetime")
      */
-    private $occurredAt;
+    private ?DateTimeInterface $occurredAt;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\EatingDetail", mappedBy="eating", orphanRemoval=true)
      */
-    private $eatingDetails;
+    private Collection $eatingDetails;
 
     public function __construct()
     {

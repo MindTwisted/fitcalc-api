@@ -15,12 +15,12 @@ class ExceptionSubscriber implements EventSubscriberInterface
     /**
      * @var ConstraintViolationListNormalizer
      */
-    private $constraintViolationListNormalizer;
+    private ConstraintViolationListNormalizer $constraintViolationListNormalizer;
 
     /**
      * @var TranslatorInterface
      */
-    private $translator;
+    private TranslatorInterface $translator;
 
     /**
      * ExceptionSubscriber constructor.

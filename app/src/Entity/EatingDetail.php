@@ -16,7 +16,7 @@ class EatingDetail
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Eating", inversedBy="eatingDetails")
@@ -24,7 +24,7 @@ class EatingDetail
      *
      * @Assert\NotNull()
      */
-    private $eating;
+    private ?Eating $eating;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Product")
@@ -32,14 +32,14 @@ class EatingDetail
      *
      * @Assert\NotNull()
      */
-    private $product;
+    private ?Product $product;
 
     /**
      * @ORM\Column(type="integer", options={"unsigned": true})
      *
      * @Assert\Positive()
      */
-    private $weight;
+    private ?int $weight;
 
     /**
      * @return int|null

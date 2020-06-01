@@ -11,10 +11,7 @@ class RefreshTokenNormalizer implements NormalizerInterface, CacheableSupportsMe
 {
     const GROUP_LOGIN = 'GROUP_LOGIN';
 
-    /**
-     * @var DateTimeNormalizer
-     */
-    private $dateTimeNormalizer;
+    private DateTimeNormalizer $dateTimeNormalizer;
 
     /**
      * RefreshTokenNormalizer constructor.

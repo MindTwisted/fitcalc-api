@@ -18,7 +18,7 @@ class EmailConfirmationRepository extends ServiceEntityRepository
     /**
      * @var UserRepository
      */
-    private $userRepository;
+    private UserRepository $userRepository;
 
     /**
      * EmailConfirmationRepository constructor.

@@ -14,10 +14,7 @@ class GenerateKeysCommand extends Command
 {
     protected static $defaultName = 'generate:keys';
 
-    /**
-     * @var Filesystem
-     */
-    private $fileSystem;
+    private Filesystem $fileSystem;
 
     /**
      * GenerateKeysCommand constructor.

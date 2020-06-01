@@ -34,14 +34,14 @@ class User implements UserInterface
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      *
      * @Assert\NotBlank(groups={Constraint::DEFAULT_GROUP, User::GROUP_GENERAL_UPDATE})
      */
-    private $name;
+    private string $name;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
@@ -49,17 +49,17 @@ class User implements UserInterface
      * @Assert\NotBlank(groups={Constraint::DEFAULT_GROUP, User::GROUP_GENERAL_UPDATE})
      * @Assert\Email(groups={Constraint::DEFAULT_GROUP, User::GROUP_GENERAL_UPDATE})
      */
-    private $email;
+    private string $email;
 
     /**
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $emailConfirmedAt;
+    private ?DateTimeInterface $emailConfirmedAt;
 
     /**
      * @ORM\Column(type="json")
      */
-    private $roles = [];
+    private array $roles = [];
 
     /**
      * @var string
@@ -71,35 +71,35 @@ class User implements UserInterface
      *     groups={Constraint::DEFAULT_GROUP, User::GROUP_PASSWORD_UPDATE}
      * )
      */
-    private $plainPassword;
+    private string $plainPassword;
 
     /**
      * @var string The hashed password
      *
      * @ORM\Column(type="string")
      */
-    private $password;
+    private string $password;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\RefreshToken", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
-    private $refreshTokens;
+    private Collection $refreshTokens;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\EmailConfirmation", mappedBy="user", orphanRemoval=true, cascade={"persist"})
      */
-    private $emailConfirmations;
+    private Collection $emailConfirmations;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\PasswordRecovery", mappedBy="user", orphanRemoval=true)
      */
-    private $passwordRecoveries;
+    private Collection $passwordRecoveries;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Product", inversedBy="usersWhoAddedProductToFavourites")
      * @JoinTable(name="user_favourite_product")
      */
-    private $favouriteProducts;
+    private Collection $favouriteProducts;
 
     /**
      * User constructor.

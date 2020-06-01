@@ -24,25 +24,10 @@ use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
  */
 class UserService
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var UserPasswordEncoderInterface
-     */
-    private $userPasswordEncoder;
-
-    /**
-     * @var ValidationService
-     */
-    private $validationService;
-
-    /**
-     * @var EmailService
-     */
-    private $emailService;
+    private EntityManagerInterface $entityManager;
+    private UserPasswordEncoderInterface $userPasswordEncoder;
+    private ValidationService $validationService;
+    private EmailService $emailService;
 
     /**
      * UserService constructor.

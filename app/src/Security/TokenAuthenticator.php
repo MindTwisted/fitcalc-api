@@ -21,11 +21,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class TokenAuthenticator extends AbstractGuardAuthenticator
 {
-    /** @var AuthService */
-    private $authService;
-
-    /** @var TranslatorInterface */
-    private $translator;
+    private AuthService $authService;
+    private TranslatorInterface $translator;
 
     /**
      * TokenAuthenticator constructor.

@@ -12,10 +12,7 @@ class UserFixtures extends BaseFixture
 {
     const INSTANCES_COUNT = 150;
 
-    /**
-     * @var UserService
-     */
-    private $userService;
+    private UserService $userService;
 
     /**
      * UserFixtures constructor.

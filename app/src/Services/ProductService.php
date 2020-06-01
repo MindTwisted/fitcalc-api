@@ -18,25 +18,10 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductService
 {
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
-
-    /**
-     * @var ValidationService
-     */
-    private $validationService;
-
-    /**
-     * @var Security
-     */
-    private $security;
+    private EntityManagerInterface $entityManager;
+    private TranslatorInterface $translator;
+    private ValidationService $validationService;
+    private Security $security;
 
 
     /**

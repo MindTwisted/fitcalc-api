@@ -12,15 +12,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class EmailService
 {
-    /**
-     * @var MailerInterface
-     */
-    private $mailer;
-
-    /**
-     * @var UrlGeneratorInterface
-     */
-    private $router;
+    private MailerInterface $mailer;
+    private UrlGeneratorInterface $router;
 
     /**
      * EmailService constructor.

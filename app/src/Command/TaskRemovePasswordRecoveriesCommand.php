@@ -20,10 +20,7 @@ class TaskRemovePasswordRecoveriesCommand extends Command
 
     protected static $defaultName = 'task:remove-password-recoveries';
 
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
     /**
      * TaskRemoveUsersWithNotConfirmedEmailsCommand constructor.

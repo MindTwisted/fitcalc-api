@@ -24,20 +24,9 @@ use Symfony\Component\Security\Core\Security;
  */
 class EatingService
 {
-    /**
-     * @var Security
-     */
-    private $security;
-
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
-
-    /**
-     * @var ValidationService
-     */
-    private $validationService;
+    private Security $security;
+    private EntityManagerInterface $entityManager;
+    private ValidationService $validationService;
 
     /**
      * EatingService constructor.

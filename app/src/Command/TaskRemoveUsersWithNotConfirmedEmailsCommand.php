@@ -19,10 +19,7 @@ class TaskRemoveUsersWithNotConfirmedEmailsCommand extends Command
 
     protected static $defaultName = 'task:remove-users-with-not-confirmed-emails';
 
-    /**
-     * @var EntityManagerInterface
-     */
-    private $entityManager;
+    private EntityManagerInterface $entityManager;
 
     /**
      * TaskRemoveUsersWithNotConfirmedEmailsCommand constructor.

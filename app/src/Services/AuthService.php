@@ -15,20 +15,9 @@ use Symfony\Component\Security\Core\Exception\AuthenticationException;
  */
 class AuthService
 {
-    /**
-     * @var UserPasswordEncoderInterface
-     */
-    private $userPasswordEncoder;
-
-    /**
-     * @var UserService
-     */
-    private $userService;
-
-    /**
-     * @var JwtService
-     */
-    private $jwtService;
+    private UserPasswordEncoderInterface $userPasswordEncoder;
+    private UserService $userService;
+    private JwtService $jwtService;
 
     /**
      * AuthService constructor.
