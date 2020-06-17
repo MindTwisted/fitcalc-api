@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+
 use App\Entity\EatingScheme;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -36,15 +38,21 @@ class EatingSchemeRepository extends ServiceEntityRepository
     }
     */
 
-    /*
-    public function findOneBySomeField($value): ?EatingScheme
+    /**
+     * @param array $data
+     *
+     * @return EatingScheme|null
+     * @throws NonUniqueResultException
+     */
+    public function findOneByNameAndUser(array $data): ?EatingScheme
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('e.name = :name')
+            ->setParameter('name', $data['name'])
+            ->andWhere('e.user = :user')
+            ->setParameter('user', $data['user'])
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
-    */
 }
