@@ -55,7 +55,7 @@ class EatingScheme
     private bool $isDefault = false;
 
     /**
-     * @ORM\OneToMany(targetEntity=EatingSchemeDetail::class, mappedBy="eating_scheme", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=EatingSchemeDetail::class, mappedBy="eatingScheme", orphanRemoval=true)
      */
     private Collection $eatingSchemeDetails;
 
