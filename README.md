@@ -7,7 +7,6 @@
 
 ### TODO
 * GET api/eating_scheme
-* DELETE api/eating_scheme/{id}
 * POST api/eating_scheme/{id}/default
 * POST api/eating_scheme/{id}/apply
 

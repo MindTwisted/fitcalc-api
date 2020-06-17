@@ -86,4 +86,35 @@ class EatingSchemeController extends AbstractController
             'data' => compact('eatingScheme')
         ]);
     }
+
+    /**
+     * @Route(
+     *     "/{id}",
+     *     requirements={"id"="\d+"},
+     *     name="deleteEatingScheme",
+     *     methods={"DELETE"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param EatingScheme $eatingScheme
+     * @param TranslatorInterface $translator
+     * @param EatingSchemeService $eatingSchemeService
+     *
+     * @return JsonResponse
+     */
+    public function deleteEatingScheme(
+        EatingScheme $eatingScheme,
+        TranslatorInterface $translator,
+        EatingSchemeService $eatingSchemeService
+    ): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(EatingSchemeVoter::DELETE, $eatingScheme);
+
+        $eatingSchemeService->deleteEatingScheme($eatingScheme);
+
+        return $this->json([
+            'message' => $translator->trans('Eating scheme has been successfully deleted.')
+        ]);
+    }
 }

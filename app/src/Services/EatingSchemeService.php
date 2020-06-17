@@ -65,4 +65,13 @@ class EatingSchemeService
 
         return $eatingScheme;
     }
+
+    /**
+     * @param EatingScheme $eatingScheme
+     */
+    public function deleteEatingScheme(EatingScheme $eatingScheme): void
+    {
+        $this->entityManager->remove($eatingScheme);
+        $this->entityManager->flush();
+    }
 }
