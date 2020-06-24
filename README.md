@@ -8,5 +8,3 @@
 ### TODO
 * POST api/eating_scheme/{id}/default
 * POST api/eating_scheme/{id}/apply
-
-* DELETE api/eating_scheme/{id}/details/{id}
