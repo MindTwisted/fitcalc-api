@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\EatingSchemeDetail;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -14,37 +15,31 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EatingSchemeDetailRepository extends ServiceEntityRepository
 {
+    /**
+     * EatingSchemeDetailRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, EatingSchemeDetail::class);
     }
 
-    // /**
-    //  * @return EatingSchemeDetail[] Returns an array of EatingSchemeDetail objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param array $data
+     *
+     * @return EatingSchemeDetail|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneByNameAndEatingScheme(array $data): ?EatingSchemeDetail
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
+            ->andWhere('e.name = :name')
+            ->setParameter('name', $data['name'])
+            ->andWhere('e.eatingScheme = :eatingScheme')
+            ->setParameter('eatingScheme', $data['eatingScheme'])
             ->getQuery()
-            ->getResult()
-        ;
+            ->getOneOrNullResult();
     }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?EatingSchemeDetail
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
-    }
-    */
 }

@@ -117,4 +117,40 @@ class EatingSchemeController extends AbstractController
             'message' => $translator->trans('Eating scheme has been successfully deleted.')
         ]);
     }
+
+    /**
+     * @Route(
+     *     "/{id}/details",
+     *     requirements={"id"="\d+"},
+     *     name="addEatingSchemeDetails",
+     *     methods={"POST"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param EatingScheme $eatingScheme
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param EatingSchemeService $eatingSchemeService
+     *
+     * @return JsonResponse
+     *
+     * @throws ValidationException
+     */
+    public function addEatingSchemeDetails(
+        EatingScheme $eatingScheme,
+        Request $request,
+        TranslatorInterface $translator,
+        EatingSchemeService $eatingSchemeService
+    ): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(EatingSchemeVoter::EDIT, $eatingScheme);
+
+        $eatingSchemeService->createOrUpdateEatingSchemeDetail($request, $eatingScheme);
+
+        return $this->json([
+            'message' => $translator->trans('Eating scheme detail has been successfully added.'),
+            'data' => compact('eatingScheme')
+        ]);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Services;
 
 
 use App\Entity\EatingScheme;
+use App\Entity\EatingSchemeDetail;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -73,5 +74,31 @@ class EatingSchemeService
     {
         $this->entityManager->remove($eatingScheme);
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param Request $request
+     * @param EatingScheme $eatingScheme
+     * @param EatingSchemeDetail|null $eatingSchemeDetail
+     *
+     * @return EatingSchemeDetail
+     *
+     * @throws ValidationException
+     */
+    public function createOrUpdateEatingSchemeDetail(
+        Request $request,
+        EatingScheme $eatingScheme,
+        ?EatingSchemeDetail $eatingSchemeDetail = null
+    ): EatingSchemeDetail
+    {
+        $eatingSchemeDetail = $eatingSchemeDetail ?? new EatingSchemeDetail();
+        $eatingSchemeDetail->setName($request->get('name', ''));
+        $eatingSchemeDetail->setEatingScheme($eatingScheme);
+
+        $this->validationService->validate($eatingSchemeDetail);
+        $this->entityManager->persist($eatingSchemeDetail);
+        $this->entityManager->flush();
+
+        return $eatingSchemeDetail;
     }
 }

@@ -10,6 +10,5 @@
 * POST api/eating_scheme/{id}/default
 * POST api/eating_scheme/{id}/apply
 
-* POST api/eating_scheme/{id}/details
 * PUT api/eating_scheme/{id}/details/{id}
 * DELETE api/eating_scheme/{id}/details/{id}
