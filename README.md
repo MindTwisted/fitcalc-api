@@ -9,5 +9,4 @@
 * POST api/eating_scheme/{id}/default
 * POST api/eating_scheme/{id}/apply
 
-* PUT api/eating_scheme/{id}/details/{id}
 * DELETE api/eating_scheme/{id}/details/{id}

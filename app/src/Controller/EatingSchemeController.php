@@ -4,11 +4,13 @@ namespace App\Controller;
 
 
 use App\Entity\EatingScheme;
+use App\Entity\EatingSchemeDetail;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Security\Voter\EatingSchemeVoter;
 use App\Services\EatingSchemeService;
 use Exception;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -175,6 +177,46 @@ class EatingSchemeController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans('Eating scheme detail has been successfully added.'),
+            'data' => compact('eatingScheme')
+        ]);
+    }
+
+    /**
+     * @Route(
+     *     "/{eating_scheme_id}/details/{detail_id}",
+     *     requirements={"eating_scheme_id"="\d+", "detail_id"="\d+"},
+     *     name="updateEatingSchemeDetails",
+     *     methods={"PUT"}
+     * )
+     *
+     * @Entity("eatingSchemeDetail", expr="repository.findOneWithEatingSchemeByIdAndEatingSchemeId(detail_id, eating_scheme_id)")
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param EatingSchemeDetail $eatingSchemeDetail
+     * @param Request $request
+     * @param TranslatorInterface $translator
+     * @param EatingSchemeService $eatingSchemeService
+     *
+     * @return JsonResponse
+     *
+     * @throws ValidationException
+     */
+    public function updateEatingSchemeDetails(
+        EatingSchemeDetail $eatingSchemeDetail,
+        Request $request,
+        TranslatorInterface $translator,
+        EatingSchemeService $eatingSchemeService
+    ): JsonResponse
+    {
+        $eatingScheme = $eatingSchemeDetail->getEatingScheme();
+
+        $this->denyAccessUnlessGranted(EatingSchemeVoter::EDIT, $eatingScheme);
+
+        $eatingSchemeService->createOrUpdateEatingSchemeDetail($request, $eatingScheme, $eatingSchemeDetail);
+
+        return $this->json([
+            'message' => $translator->trans('Eating scheme detail has been successfully updated.'),
             'data' => compact('eatingScheme')
         ]);
     }

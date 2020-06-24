@@ -42,4 +42,25 @@ class EatingSchemeDetailRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * @param int $id
+     * @param int $eatingSchemeId
+     *
+     * @return EatingSchemeDetail|null
+     *
+     * @throws NonUniqueResultException
+     */
+    public function findOneWithEatingSchemeByIdAndEatingSchemeId(int $id, int $eatingSchemeId): ?EatingSchemeDetail
+    {
+        return $this->createQueryBuilder('e')
+            ->leftJoin('e.eatingScheme', 'es')
+            ->addSelect('es')
+            ->andWhere('e.id = :id')
+            ->setParameter('id', $id)
+            ->andWhere('es.id = :eatingSchemeId')
+            ->setParameter('eatingSchemeId', $eatingSchemeId)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }
