@@ -56,6 +56,7 @@ class EatingScheme
 
     /**
      * @ORM\OneToMany(targetEntity=EatingSchemeDetail::class, mappedBy="eatingScheme", orphanRemoval=true)
+     * @ORM\OrderBy({"id" = "ASC"})
      */
     private Collection $eatingSchemeDetails;
 
