@@ -8,6 +8,7 @@ use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Security\Voter\EatingSchemeVoter;
 use App\Services\EatingSchemeService;
+use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +25,30 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class EatingSchemeController extends AbstractController
 {
+    /**
+     * @Route("", name="getAllEatingScheme", methods={"GET"})
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param Request $request
+     * @param EatingSchemeService $eatingSchemeService
+     *
+     * @return JsonResponse
+     *
+     * @throws Exception
+     */
+    public function getAllEatingScheme(
+        Request $request,
+        EatingSchemeService $eatingSchemeService
+    ): JsonResponse
+    {
+        $eatingScheme = $eatingSchemeService->getAllEatingSchemeOfCurrentUser($request);
+
+        return $this->json([
+            'data' => compact('eatingScheme')
+        ]);
+    }
+
     /**
      * @Route("", name="addEatingScheme", methods={"POST"})
      *

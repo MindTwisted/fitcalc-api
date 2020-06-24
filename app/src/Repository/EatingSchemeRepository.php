@@ -4,9 +4,12 @@ namespace App\Repository;
 
 
 use App\Entity\EatingScheme;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 
 /**
  * @method EatingScheme|null find($id, $lockMode = null, $lockVersion = null)
@@ -16,32 +19,21 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EatingSchemeRepository extends ServiceEntityRepository
 {
+    /**
+     * EatingSchemeRepository constructor.
+     *
+     * @param ManagerRegistry $registry
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, EatingScheme::class);
     }
 
-    // /**
-    //  * @return EatingScheme[] Returns an array of EatingScheme objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('e')
-            ->andWhere('e.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('e.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
-
     /**
      * @param array $data
      *
      * @return EatingScheme|null
+     *
      * @throws NonUniqueResultException
      */
     public function findOneByNameAndUser(array $data): ?EatingScheme
@@ -54,5 +46,33 @@ class EatingSchemeRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
+
+    /**
+     * @param User $user
+     * @param int $offset
+     * @param int $limit
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function findByUser(
+        User $user,
+        int $offset = 0,
+        int $limit = 50
+    ): array
+    {
+        $query = $this->createQueryBuilder('e')
+            ->leftJoin('e.eatingSchemeDetails', 'ed')
+            ->addSelect('ed')
+            ->andWhere('e.user = :user')
+            ->setParameter('user', $user)
+            ->addOrderBy('e.id', 'ASC')
+            ->addOrderBy('ed.id', 'ASC')
+            ->setFirstResult($offset)
+            ->setMaxResults($limit);
+        $paginator = new Paginator($query);
+
+        return iterator_to_array($paginator->getIterator());
     }
 }

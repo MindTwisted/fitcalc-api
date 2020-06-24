@@ -7,7 +7,9 @@ use App\Entity\EatingScheme;
 use App\Entity\EatingSchemeDetail;
 use App\Entity\User;
 use App\Exception\ValidationException;
+use App\Repository\EatingSchemeRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Security;
 
@@ -38,6 +40,24 @@ class EatingSchemeService
         $this->security = $security;
         $this->entityManager = $entityManager;
         $this->validationService = $validationService;
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function getAllEatingSchemeOfCurrentUser(Request $request): array
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        /** @var EatingSchemeRepository $eatingSchemeRepository */
+        $eatingSchemeRepository = $this->entityManager->getRepository(EatingScheme::class);
+
+        return $eatingSchemeRepository->findByUser($user, $request->query->getInt('offset', 0));
     }
 
     /**
