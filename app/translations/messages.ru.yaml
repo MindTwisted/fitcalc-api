@@ -49,3 +49,5 @@ Forbidden.: Запрещено.
 'Eating scheme detail has been successfully updated.': 'Детали схемы питания были успешно обновлены.'
 'Eating scheme detail has been successfully deleted.': 'Детали схемы питания были успешно удалены.'
 'Default eating scheme has been successfully set.': 'Схема питания по умолчанию была успешно установлена.'
+'Eating scheme has been successfully applied.': 'Схема питания была успешно применена.'
+'It was not possible to apply the eating scheme, because as of date %date% there are already eating exist.': 'Не удалось применить схему питания, потому что состоянием на %date% уже есть приемы пищи.'

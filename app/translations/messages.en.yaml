@@ -49,3 +49,5 @@ Forbidden.: Forbidden.
 'Eating scheme detail has been successfully updated.': 'Eating scheme detail has been successfully updated.'
 'Eating scheme detail has been successfully deleted.': 'Eating scheme detail has been successfully deleted.'
 'Default eating scheme has been successfully set.': 'Default eating scheme has been successfully set.'
+'Eating scheme has been successfully applied.': 'Eating scheme has been successfully applied.'
+'It was not possible to apply the eating scheme, because as of date %date% there are already eating exist.': 'It was not possible to apply the eating scheme, because as of date %date% there are already eating exist.'

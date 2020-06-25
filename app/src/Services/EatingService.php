@@ -5,6 +5,8 @@ namespace App\Services;
 
 use App\Entity\Eating;
 use App\Entity\EatingDetail;
+use App\Entity\EatingScheme;
+use App\Entity\EatingSchemeDetail;
 use App\Entity\Product;
 use App\Entity\User;
 use App\Exception\ValidationException;
@@ -14,8 +16,11 @@ use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NonUniqueResultException;
 use Exception;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Security\Core\Security;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class EatingService
@@ -27,6 +32,7 @@ class EatingService
     private Security $security;
     private EntityManagerInterface $entityManager;
     private ValidationService $validationService;
+    private TranslatorInterface $translator;
 
     /**
      * EatingService constructor.
@@ -34,16 +40,19 @@ class EatingService
      * @param Security $security
      * @param EntityManagerInterface $entityManager
      * @param ValidationService $validationService
+     * @param TranslatorInterface $translator
      */
     public function __construct(
         Security $security,
         EntityManagerInterface $entityManager,
-        ValidationService $validationService
+        ValidationService $validationService,
+        TranslatorInterface $translator
     )
     {
         $this->security = $security;
         $this->entityManager = $entityManager;
         $this->validationService = $validationService;
+        $this->translator = $translator;
     }
 
     /**
@@ -57,12 +66,7 @@ class EatingService
     {
         /** @var User $user */
         $user = $this->security->getUser();
-
-        try {
-            $occurredAt = new DateTime($request->get('occurred_at', 'now'));
-        } catch (Exception $e) {
-            $occurredAt = new DateTime();
-        }
+        $occurredAt = $this->getOccurredAtFromRequest($request);
 
         /** @var EatingRepository $eatingRepository */
         $eatingRepository = $this->entityManager->getRepository(Eating::class);
@@ -86,12 +90,7 @@ class EatingService
     {
         /** @var User $user */
         $user = $this->security->getUser();
-
-        try {
-            $occurredAt = new DateTime($request->get('occurred_at', 'now'));
-        } catch (Exception $e) {
-            $occurredAt = new DateTime();
-        }
+        $occurredAt = $this->getOccurredAtFromRequest($request);
 
         $eating = $eating ?? new Eating();
         $eating->setName($request->get('name', ''));
@@ -170,5 +169,64 @@ class EatingService
     {
         $this->entityManager->remove($eating);
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param EatingScheme $eatingScheme
+     * @param Request $request
+     *
+     * @return array
+     *
+     * @throws Exception
+     */
+    public function applyEatingScheme(EatingScheme $eatingScheme, Request $request): array
+    {
+        $existedEating = $this->getAllEatingOfCurrentUser($request);
+        $occurredAt = $this->getOccurredAtFromRequest($request);
+
+        if (count($existedEating)) {
+            throw new HttpException(
+                JsonResponse::HTTP_CONFLICT,
+                $this->translator->trans(
+                    'It was not possible to apply the eating scheme, because as of date %date% there are already eating exist.',
+                    ['%date%' => $occurredAt->format('j.m.o')]
+                )
+            );
+        }
+
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        $eatingScheme->getEatingSchemeDetails()->map(
+            function (EatingSchemeDetail $eatingSchemeDetail) use ($occurredAt, $user) {
+                $eating = new Eating();
+
+                $eating->setName($eatingSchemeDetail->getName());
+                $eating->setOccurredAt($occurredAt);
+                $eating->setUser($user);
+
+                $this->entityManager->persist($eating);
+            }
+        );
+
+        $this->entityManager->flush();
+
+        return $this->getAllEatingOfCurrentUser($request);
+    }
+
+    /**
+     * @param Request $request
+     *
+     * @return DateTime
+     */
+    private function getOccurredAtFromRequest(Request $request): DateTime
+    {
+        try {
+            $occurredAt = new DateTime($request->get('occurred_at', 'now'));
+        } catch (Exception $e) {
+            $occurredAt = new DateTime();
+        }
+
+        return $occurredAt;
     }
 }
