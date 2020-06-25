@@ -8,6 +8,7 @@ use App\Entity\EatingSchemeDetail;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Repository\EatingSchemeRepository;
+use Doctrine\DBAL\ConnectionException;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Component\HttpFoundation\Request;
@@ -129,5 +130,34 @@ class EatingSchemeService
     {
         $this->entityManager->remove($eatingSchemeDetail);
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param EatingScheme $eatingScheme
+     *
+     * @throws ConnectionException
+     */
+    public function setDefaultEatingScheme(EatingScheme $eatingScheme): void
+    {
+        /** @var User $user */
+        $user = $this->security->getUser();
+
+        /** @var EatingSchemeRepository $eatingSchemeRepository */
+        $eatingSchemeRepository = $this->entityManager->getRepository(EatingScheme::class);
+
+        $this->entityManager->getConnection()->beginTransaction();
+
+        try {
+            $eatingSchemeRepository->removeDefaultEatingSchemeByUser($user);
+            $eatingSchemeRepository->setDefaultEatingSchemeById($eatingScheme->getId());
+
+            $eatingScheme->setIsDefault(true);
+
+            $this->entityManager->getConnection()->commit();
+        } catch (Exception $e) {
+            $this->entityManager->getConnection()->rollBack();
+
+            throw $e;
+        }
     }
 }

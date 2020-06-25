@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Exception\ValidationException;
 use App\Security\Voter\EatingSchemeVoter;
 use App\Services\EatingSchemeService;
+use Doctrine\DBAL\ConnectionException;
 use Exception;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Entity;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -253,6 +254,40 @@ class EatingSchemeController extends AbstractController
 
         return $this->json([
             'message' => $translator->trans('Eating scheme detail has been successfully deleted.'),
+            'data' => compact('eatingScheme')
+        ]);
+    }
+
+    /**
+     * @Route(
+     *     "/{id}/default",
+     *     requirements={"id"="\d+"},
+     *     name="setDefaultEatingScheme",
+     *     methods={"POST"}
+     * )
+     *
+     * @IsGranted(User::ROLE_APP_USER, message="Forbidden.")
+     *
+     * @param EatingScheme $eatingScheme
+     * @param TranslatorInterface $translator
+     * @param EatingSchemeService $eatingSchemeService
+     *
+     * @return JsonResponse
+     *
+     * @throws ConnectionException
+     */
+    public function setDefaultEatingScheme(
+        EatingScheme $eatingScheme,
+        TranslatorInterface $translator,
+        EatingSchemeService $eatingSchemeService
+    ): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(EatingSchemeVoter::EDIT, $eatingScheme);
+
+        $eatingSchemeService->setDefaultEatingScheme($eatingScheme);
+
+        return $this->json([
+            'message' => $translator->trans('Default eating scheme has been successfully set.'),
             'data' => compact('eatingScheme')
         ]);
     }

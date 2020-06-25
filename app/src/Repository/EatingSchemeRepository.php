@@ -75,4 +75,34 @@ class EatingSchemeRepository extends ServiceEntityRepository
 
         return iterator_to_array($paginator->getIterator());
     }
+
+    /**
+     * @param User $user
+     */
+    public function removeDefaultEatingSchemeByUser(User $user): void
+    {
+        $this->createQueryBuilder('e')
+            ->update()
+            ->set('e.isDefault', ':isDefault')
+            ->setParameter('isDefault', false)
+            ->andWhere('e.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
+     * @param int $id
+     */
+    public function setDefaultEatingSchemeById(int $id): void
+    {
+        $this->createQueryBuilder('e')
+            ->update()
+            ->set('e.isDefault', ':isDefault')
+            ->setParameter('isDefault', true)
+            ->andWhere('e.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->execute();
+    }
 }

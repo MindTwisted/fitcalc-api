@@ -6,5 +6,4 @@
 3) run cron once an hour - php bin/console task:remove-password-recoveries 24
 
 ### TODO
-* POST api/eating_scheme/{id}/default
 * POST api/eating_scheme/{id}/apply
